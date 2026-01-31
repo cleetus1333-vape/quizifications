@@ -1,27 +1,27 @@
 export const colors = {
-  background: '#0f0f12',
-  backgroundGradientStart: '#0f0f12',
-  backgroundGradientEnd: '#1a1a22',
+  background: '#0a0a0b',
+  backgroundGradientStart: '#0a0a0b',
+  backgroundGradientEnd: '#111112',
   
-  card: '#18181f',
-  cardElevated: '#1e1e28',
-  cardHighlight: '#252532',
+  card: '#141416',
+  cardElevated: '#1a1a1e',
+  cardHighlight: '#222226',
   
-  border: '#2d2d3a',
-  borderLight: '#3a3a4a',
+  border: '#2a2a2e',
+  borderLight: '#3a3a40',
   
   text: '#ffffff',
   textSecondary: '#9ca3af',
   textMuted: '#6b7280',
   
-  primary: '#8b5cf6',
-  primaryLight: '#a78bfa',
-  primaryDark: '#7c3aed',
-  primaryGlow: 'rgba(139, 92, 246, 0.2)',
+  primary: '#c8ff00',
+  primaryLight: '#d4ff33',
+  primaryDark: '#a8d900',
+  primaryGlow: 'rgba(200, 255, 0, 0.15)',
   
-  accent: '#06b6d4',
-  accentLight: '#22d3ee',
-  accentGlow: 'rgba(6, 182, 212, 0.15)',
+  accent: '#c8ff00',
+  accentLight: '#d4ff33',
+  accentGlow: 'rgba(200, 255, 0, 0.12)',
   
   success: '#10b981',
   successGlow: 'rgba(16, 185, 129, 0.15)',
@@ -37,33 +37,33 @@ export const colors = {
 };
 
 export const gradients = {
-  primary: ['#8b5cf6', '#6366f1'],
-  accent: ['#06b6d4', '#0891b2'],
+  primary: ['#c8ff00', '#a8d900'],
+  accent: ['#c8ff00', '#9fcc00'],
   success: ['#10b981', '#059669'],
   gold: ['#fbbf24', '#f59e0b'],
-  dark: ['#1e1e28', '#0f0f12'],
-  card: ['#1e1e28', '#18181f'],
+  dark: ['#1a1a1e', '#0a0a0b'],
+  card: ['#1a1a1e', '#141416'],
 };
 
 export const shadows = {
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 2,
     elevation: 2,
   },
   md: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 4,
   },
   lg: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 16,
     elevation: 8,
   },

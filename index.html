@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizifications - Study Smarter, Not Harder</title>
     <meta name="description" content="Get randomly quizzed throughout the day from your own notes. Join study groups with classmates and actually remember what you study.">
+    <link rel="icon" type="image/png" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -17,13 +18,19 @@
 
         :root {
             --bg: #0a0a0b;
-            --card: #141416;
+            --bg-elevated: #141416;
+            --card: #1a1a1e;
             --border: #2a2a2e;
-            --text: #fafafa;
-            --text-secondary: #8a8a8f;
+            --text: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
             --accent: #c8ff00;
             --accent-glow: rgba(200, 255, 0, 0.15);
-            --success: #00d26a;
+            --accent-dark: #a8d900;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
@@ -31,6 +38,7 @@
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
@@ -39,8 +47,16 @@
             padding: 0 24px;
         }
 
+        /* Header */
         header {
-            padding: 24px 0;
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 11, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 100;
             border-bottom: 1px solid var(--border);
         }
 
@@ -54,42 +70,109 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
+            text-decoration: none;
+            color: var(--text);
         }
 
-        .logo-icon {
-            font-size: 32px;
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--text);
         }
 
         .cta-button {
             background: var(--accent);
             color: var(--bg);
-            padding: 12px 24px;
+            padding: 12px 28px;
             border-radius: 12px;
             font-weight: 700;
             text-decoration: none;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .cta-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px var(--accent-glow);
+            box-shadow: 0 8px 32px var(--accent-glow);
         }
 
+        .cta-button.secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .cta-button.secondary:hover {
+            background: var(--bg-elevated);
+            box-shadow: none;
+        }
+
+        /* Hero */
         .hero {
-            padding: 80px 0;
+            padding: 160px 0 100px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: var(--accent);
         }
 
         .hero h1 {
-            font-size: clamp(40px, 8vw, 72px);
-            font-weight: 800;
-            line-height: 1.1;
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 900;
+            line-height: 1.05;
             margin-bottom: 24px;
+            letter-spacing: -2px;
+            position: relative;
         }
 
         .hero h1 span {
@@ -101,293 +184,333 @@
             color: var(--text-secondary);
             max-width: 600px;
             margin: 0 auto 40px;
+            line-height: 1.7;
         }
 
-        .hero-cta {
+        .hero-buttons {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        .hero-cta .cta-button {
-            font-size: 18px;
-            padding: 16px 32px;
-        }
-
-        .hero-cta small {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .phone-mockup {
-            max-width: 320px;
-            margin: 60px auto 0;
-            background: var(--card);
-            border-radius: 32px;
-            padding: 12px;
-            border: 1px solid var(--border);
-            box-shadow: 0 24px 48px rgba(0,0,0,0.4);
-        }
-
-        .phone-screen {
-            background: var(--bg);
-            border-radius: 24px;
-            padding: 24px;
-            min-height: 500px;
-        }
-
-        .notification {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 16px;
-            border: 1px solid var(--border);
-            margin-bottom: 16px;
-        }
-
-        .notification-header {
+        .hero-stats {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        .notification-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .notification-body {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .quiz-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 24px;
-            border: 1px solid var(--accent);
-            box-shadow: 0 0 24px var(--accent-glow);
-        }
-
-        .quiz-source {
-            font-size: 12px;
-            color: var(--accent);
-            margin-bottom: 12px;
-        }
-
-        .quiz-question {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .quiz-answers {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .quiz-answer {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .quiz-answer:hover {
-            border-color: var(--accent);
-        }
-
-        .quiz-answer.correct {
-            background: rgba(0, 210, 106, 0.15);
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        .features {
-            padding: 80px 0;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 80px;
+            padding-top: 48px;
             border-top: 1px solid var(--border);
         }
 
-        .features h2 {
+        .hero-stat {
             text-align: center;
+        }
+
+        .hero-stat-value {
             font-size: 36px;
-            margin-bottom: 48px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .hero-stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Features */
+        .features {
+            padding: 120px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 24px;
         }
 
         .feature-card {
-            background: var(--card);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
             border-radius: 20px;
             padding: 32px;
-            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
         }
 
         .feature-icon {
-            font-size: 40px;
-            margin-bottom: 16px;
+            width: 56px;
+            height: 56px;
+            background: var(--accent-glow);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
         }
 
         .feature-card h3 {
             font-size: 20px;
-            margin-bottom: 8px;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
 
         .feature-card p {
             color: var(--text-secondary);
             font-size: 15px;
+            line-height: 1.7;
         }
 
+        /* How It Works */
         .how-it-works {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .how-it-works h2 {
-            text-align: center;
-            font-size: 36px;
-            margin-bottom: 48px;
+            padding: 120px 0;
+            background: var(--bg-elevated);
         }
 
         .steps {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 32px;
-            max-width: 600px;
-            margin: 0 auto;
+            margin-top: 64px;
         }
 
         .step {
-            display: flex;
-            gap: 24px;
-            align-items: flex-start;
+            text-align: center;
+            padding: 32px;
         }
 
         .step-number {
-            width: 48px;
-            height: 48px;
+            width: 64px;
+            height: 64px;
             background: var(--accent);
             color: var(--bg);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 24px;
             font-weight: 800;
+            margin: 0 auto 24px;
+        }
+
+        .step h3 {
             font-size: 20px;
-            flex-shrink: 0;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
 
-        .step-content h3 {
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .step-content p {
+        .step p {
             color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
         }
 
-        .groups {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-            background: linear-gradient(180deg, var(--bg) 0%, var(--card) 100%);
+        /* Pricing */
+        .pricing {
+            padding: 120px 0;
         }
 
-        .groups h2 {
-            text-align: center;
-            font-size: 36px;
-            margin-bottom: 16px;
-        }
-
-        .groups > p {
-            text-align: center;
-            color: var(--text-secondary);
-            max-width: 500px;
-            margin: 0 auto 48px;
-        }
-
-        .group-demo {
-            max-width: 400px;
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 900px;
             margin: 0 auto;
-            background: var(--card);
-            border-radius: 24px;
-            padding: 24px;
+        }
+
+        .pricing-card {
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            position: relative;
         }
 
-        .group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
+        .pricing-card.featured {
+            border-color: var(--accent);
+            background: linear-gradient(180deg, rgba(200, 255, 0, 0.05) 0%, var(--bg-elevated) 100%);
         }
 
-        .group-name {
-            font-size: 20px;
+        .pricing-card.featured::before {
+            content: 'Best Value';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: var(--bg);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 12px;
             font-weight: 700;
         }
 
-        .group-stats {
-            font-size: 14px;
+        .pricing-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .pricing-card .price {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .pricing-card .price span {
+            font-size: 18px;
+            font-weight: 500;
             color: var(--text-secondary);
         }
 
-        .group-code {
-            background: var(--bg);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-family: monospace;
+        .pricing-card .billing {
+            color: var(--text-muted);
             font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
             color: var(--accent);
+            font-weight: 700;
         }
 
-        .leaderboard {
-            margin-top: 16px;
+        .pricing-card .cta-button {
+            width: 100%;
+            justify-content: center;
         }
 
-        .leaderboard-title {
-            font-size: 12px;
+        /* Groups */
+        .groups {
+            padding: 120px 0;
+            background: var(--bg-elevated);
+        }
+
+        .groups-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .groups-text h2 {
+            font-size: clamp(32px, 5vw, 44px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 24px;
+        }
+
+        .groups-text p {
             color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
+            font-size: 17px;
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .groups-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .groups-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .groups-feature span {
+            color: var(--accent);
+            font-size: 20px;
+        }
+
+        .groups-visual {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+        }
+
+        .leaderboard-preview {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 24px;
         }
 
         .leaderboard-row {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--bg);
+            gap: 16px;
+            padding: 16px;
             border-radius: 12px;
             margin-bottom: 8px;
         }
 
+        .leaderboard-row:first-child {
+            background: var(--accent-glow);
+        }
+
         .leaderboard-rank {
-            font-size: 20px;
+            font-size: 24px;
         }
 
-        .leaderboard-user {
+        .leaderboard-name {
             flex: 1;
-        }
-
-        .leaderboard-username {
             font-weight: 600;
-        }
-
-        .leaderboard-accuracy {
-            font-size: 13px;
-            color: var(--text-secondary);
         }
 
         .leaderboard-streak {
@@ -397,355 +520,416 @@
             font-weight: 700;
         }
 
-        .pricing {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .pricing h2 {
+        /* CTA Section */
+        .cta-section {
+            padding: 120px 0;
             text-align: center;
-            font-size: 36px;
-            margin-bottom: 48px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            max-width: 700px;
-            margin: 0 auto;
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
         }
 
-        .pricing-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 32px;
-            border: 1px solid var(--border);
-        }
-
-        .pricing-card.featured {
-            border-color: var(--accent);
-            box-shadow: 0 0 32px var(--accent-glow);
-        }
-
-        .pricing-card h3 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .pricing-price {
-            font-size: 40px;
-            font-weight: 800;
+        .cta-section h2 {
+            font-size: clamp(36px, 6vw, 56px);
+            font-weight: 900;
+            letter-spacing: -1px;
             margin-bottom: 24px;
         }
 
-        .pricing-price span {
-            font-size: 16px;
-            font-weight: 400;
+        .cta-section p {
+            font-size: 18px;
             color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 40px;
         }
 
-        .pricing-features {
-            list-style: none;
-        }
-
-        .pricing-features li {
-            padding: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .pricing-features li::before {
-            content: "✓";
-            color: var(--success);
-            font-weight: 700;
-        }
-
-        .signup {
-            padding: 80px 0;
+        /* Footer */
+        footer {
+            background: var(--bg-elevated);
             border-top: 1px solid var(--border);
-            text-align: center;
+            padding: 64px 0 32px;
         }
 
-        .signup h2 {
-            font-size: 36px;
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 48px;
+        }
+
+        .footer-brand {
+            max-width: 300px;
+        }
+
+        .footer-brand .logo {
             margin-bottom: 16px;
         }
 
-        .signup p {
-            color: var(--text-secondary);
-            margin-bottom: 32px;
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.7;
         }
 
-        .signup-form {
-            display: flex;
-            gap: 12px;
-            max-width: 500px;
-            margin: 0 auto;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .signup-form input {
-            flex: 1;
-            min-width: 250px;
-            padding: 16px 20px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+        .footer-column h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 20px;
             color: var(--text);
-            font-size: 16px;
         }
 
-        .signup-form input::placeholder {
-            color: var(--text-secondary);
+        .footer-column a {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 0;
+            transition: color 0.2s;
         }
 
-        .signup-form input:focus {
-            outline: none;
-            border-color: var(--accent);
+        .footer-column a:hover {
+            color: var(--accent);
         }
 
-        footer {
-            padding: 40px 0;
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 32px;
             border-top: 1px solid var(--border);
-            text-align: center;
-            color: var(--text-secondary);
+        }
+
+        .footer-bottom p {
+            color: var(--text-muted);
             font-size: 14px;
         }
 
-        @media (max-width: 640px) {
-            .header-content {
+        .footer-bottom a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 24px;
+        }
+
+        .footer-bottom a:hover {
+            color: var(--accent);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            nav {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .groups-content {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .hero-stats {
+                flex-wrap: wrap;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 40px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-bottom {
                 flex-direction: column;
                 gap: 16px;
-            }
-
-            .hero {
-                padding: 48px 0;
-            }
-
-            .step {
-                flex-direction: column;
                 text-align: center;
             }
 
-            .step-number {
-                margin: 0 auto;
+            .footer-bottom a {
+                margin-left: 0;
+                margin: 0 12px;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <span class="logo-icon">📝</span>
-                    <span>Quizifications</span>
-                </div>
-                <a href="#signup" class="cta-button">Get Early Access</a>
-            </div>
+        <div class="container header-content">
+            <a href="/" class="logo">
+                <img src="assets/icon.png" alt="Quizifications">
+                Quizifications
+            </a>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#groups">Study Groups</a>
+                <a href="contact.html" class="cta-button">Get Started</a>
+            </nav>
+            <button class="mobile-menu-btn">☰</button>
         </div>
     </header>
 
     <section class="hero">
         <div class="container">
+            <div class="hero-badge">
+                <span>🚀</span> Now available on iOS & Android
+            </div>
             <h1>Study Smarter,<br><span>Not Harder</span></h1>
             <p>Get randomly quizzed throughout the day from your own notes. Join study groups with classmates and actually remember what you study.</p>
-            <div class="hero-cta">
-                <a href="#signup" class="cta-button">Join the Waitlist</a>
-                <small>Free tier available · No credit card required</small>
+            <div class="hero-buttons">
+                <a href="#pricing" class="cta-button">Start Free Trial →</a>
+                <a href="#how-it-works" class="cta-button secondary">See How It Works</a>
             </div>
-
-            <div class="phone-mockup">
-                <div class="phone-screen">
-                    <div class="notification">
-                        <div class="notification-header">
-                            📝 Quizifications · now
-                        </div>
-                        <div class="notification-title">Quiz time!</div>
-                        <div class="notification-body">BIO 101 - Chapter 5</div>
-                    </div>
-                    <div class="quiz-card">
-                        <div class="quiz-source">📚 BIO 101 Study Group</div>
-                        <div class="quiz-question">What is the powerhouse of the cell?</div>
-                        <div class="quiz-answers">
-                            <div class="quiz-answer correct">Mitochondria</div>
-                            <div class="quiz-answer">Nucleus</div>
-                            <div class="quiz-answer">Ribosome</div>
-                            <div class="quiz-answer">Golgi apparatus</div>
-                        </div>
-                    </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">3 Days</div>
+                    <div class="hero-stat-label">Free Trial</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">85%</div>
+                    <div class="hero-stat-label">Better Retention</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">1-20</div>
+                    <div class="hero-stat-label">Group Members</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="features">
+    <section class="features" id="features">
         <div class="container">
-            <h2>Why Quizifications Works</h2>
+            <div class="section-header">
+                <div class="section-label">Features</div>
+                <h2 class="section-title">Everything You Need to Ace Your Studies</h2>
+                <p class="section-subtitle">Powerful features designed to help you remember more and study less</p>
+            </div>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">🔔</div>
-                    <h3>Persistent Notifications</h3>
-                    <p>We don't give up on you. Dismiss a quiz? It comes back. Stay accountable without trying.</p>
+                    <h3>Push Notification Quizzes</h3>
+                    <p>Get quizzed throughout the day with smart notifications. Spaced repetition ensures you review at the optimal time for retention.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
+                    <div class="feature-icon">📝</div>
                     <h3>AI-Generated Questions</h3>
-                    <p>Paste your notes, we create the quiz. No manual flashcard creation needed.</p>
+                    <p>Upload your notes and our AI creates personalized quiz questions. No more making flashcards by hand.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Study Groups</h3>
+                    <p>Create or join study groups with up to 20 members. Share notes and compete on weekly leaderboards.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Progress Tracking</h3>
+                    <p>Track your streak, accuracy, and improvement over time. See exactly what you need to review.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📚</div>
-                    <h3>Study Groups</h3>
-                    <p>Share notes with classmates. Everyone gets quizzed from the combined pool.</p>
+                    <h3>Pre-Built Categories</h3>
+                    <p>Access our library of SAT prep, science, history, languages, and more. Start quizzing immediately.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🏆</div>
-                    <h3>Group Leaderboards</h3>
-                    <p>Compete with your study group. See who's actually putting in the work.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔥</div>
-                    <h3>Streaks That Matter</h3>
-                    <p>Build daily streaks and share milestones. Consistency beats cramming.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⏰</div>
-                    <h3>Study Windows</h3>
-                    <p>Set when you want to be quizzed. We respect your schedule (mostly).</p>
+                    <div class="feature-icon">⚡</div>
+                    <h3>Quick 10-Second Quizzes</h3>
+                    <p>Each quiz takes just seconds to complete. Study while waiting in line, between classes, or during breaks.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="how-it-works">
+    <section class="how-it-works" id="how-it-works">
         <div class="container">
-            <h2>How It Works</h2>
+            <div class="section-header">
+                <div class="section-label">How It Works</div>
+                <h2 class="section-title">Get Started in Minutes</h2>
+                <p class="section-subtitle">Three simple steps to better studying</p>
+            </div>
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Create or Join a Study Group</h3>
-                        <p>Make a group for your class and share the 6-digit code with classmates.</p>
-                    </div>
+                    <h3>Add Your Notes</h3>
+                    <p>Upload your study materials or choose from our pre-built categories. Our AI generates quiz questions automatically.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Upload Your Notes</h3>
-                        <p>Paste your lecture notes, syllabus, or study materials. AI creates questions automatically.</p>
-                    </div>
+                    <h3>Set Your Schedule</h3>
+                    <p>Choose when you want to be quizzed. Set study windows around your classes, work, or whenever works best.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Share to the Group</h3>
-                        <p>Add your notes to the group pool. Everyone benefits from combined knowledge.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>Get Quizzed Throughout the Day</h3>
-                        <p>Random notifications keep you sharp. Answer in seconds, then back to your life.</p>
-                    </div>
+                    <h3>Get Quizzed & Learn</h3>
+                    <p>Receive push notifications with quick quizzes. Answer in seconds and watch your knowledge grow.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="groups">
+    <section class="pricing" id="pricing">
         <div class="container">
-            <h2>Study Groups That Actually Work</h2>
-            <p>Share notes, compete on accuracy, and hold each other accountable.</p>
-            
-            <div class="group-demo">
-                <div class="group-header">
-                    <div>
-                        <div class="group-name">📚 BIO 101 - Section 3</div>
-                        <div class="group-stats">23 members · 847 questions</div>
-                    </div>
-                    <div class="group-code">ABC123</div>
-                </div>
-                
-                <div class="leaderboard">
-                    <div class="leaderboard-title">This Week</div>
-                    <div class="leaderboard-row">
-                        <div class="leaderboard-rank">🥇</div>
-                        <div class="leaderboard-user">
-                            <div class="leaderboard-username">@emma</div>
-                            <div class="leaderboard-accuracy">94% accuracy</div>
-                        </div>
-                        <div class="leaderboard-streak">🔥 12</div>
-                    </div>
-                    <div class="leaderboard-row">
-                        <div class="leaderboard-rank">🥈</div>
-                        <div class="leaderboard-user">
-                            <div class="leaderboard-username">@jake</div>
-                            <div class="leaderboard-accuracy">89% accuracy</div>
-                        </div>
-                        <div class="leaderboard-streak">🔥 8</div>
-                    </div>
-                    <div class="leaderboard-row" style="border: 1px solid var(--accent); background: var(--accent-glow);">
-                        <div class="leaderboard-rank">🥉</div>
-                        <div class="leaderboard-user">
-                            <div class="leaderboard-username" style="color: var(--accent);">@you</div>
-                            <div class="leaderboard-accuracy">87% accuracy</div>
-                        </div>
-                        <div class="leaderboard-streak">🔥 6</div>
-                    </div>
-                </div>
+            <div class="section-header">
+                <div class="section-label">Pricing</div>
+                <h2 class="section-title">Start With a Free Trial</h2>
+                <p class="section-subtitle">Try everything free for 3 days. Cancel anytime.</p>
             </div>
-        </div>
-    </section>
-
-    <section class="pricing">
-        <div class="container">
-            <h2>Simple Pricing</h2>
-            <div class="pricing-grid">
+            <div class="pricing-cards">
                 <div class="pricing-card">
-                    <h3>Free</h3>
-                    <div class="pricing-price">$0<span>/mo</span></div>
+                    <h3>Monthly</h3>
+                    <div class="price">$4.99<span>/month</span></div>
+                    <div class="billing">Billed monthly</div>
                     <ul class="pricing-features">
-                        <li>Pre-built study categories</li>
-                        <li>10 questions per day</li>
-                        <li>Join study groups</li>
-                        <li>Basic streak tracking</li>
-                        <li>Global leaderboard</li>
+                        <li>Unlimited notes & AI questions</li>
+                        <li>Study groups (up to 20 members)</li>
+                        <li>Push notification quizzes</li>
+                        <li>Progress tracking & analytics</li>
+                        <li>All pre-built categories</li>
+                        <li>Priority support</li>
                     </ul>
+                    <a href="#" class="cta-button secondary">Start Free Trial</a>
                 </div>
                 <div class="pricing-card featured">
-                    <h3>Premium</h3>
-                    <div class="pricing-price">$3.99<span>/mo</span></div>
+                    <h3>Yearly</h3>
+                    <div class="price">$39.99<span>/year</span></div>
+                    <div class="billing">Save 33% - just $3.33/month</div>
                     <ul class="pricing-features">
-                        <li>Everything in Free</li>
-                        <li>Upload your own notes</li>
-                        <li>AI question generation</li>
-                        <li>Unlimited questions</li>
-                        <li>Share notes to groups</li>
-                        <li>Detailed analytics</li>
+                        <li>Everything in Monthly</li>
+                        <li>Unlimited notes & AI questions</li>
+                        <li>Study groups (up to 20 members)</li>
+                        <li>Push notification quizzes</li>
+                        <li>Progress tracking & analytics</li>
+                        <li>Priority support</li>
                     </ul>
+                    <a href="#" class="cta-button">Start Free Trial</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="signup" id="signup">
+    <section class="groups" id="groups">
+        <div class="container groups-content">
+            <div class="groups-text">
+                <div class="section-label">Study Groups</div>
+                <h2>Learn Together,<br>Compete Together</h2>
+                <p>Create or join study groups with classmates. Share notes, quiz each other, and compete on weekly leaderboards. Studying is better with friends.</p>
+                <div class="groups-features">
+                    <div class="groups-feature">
+                        <span>👥</span> Up to 20 members per group
+                    </div>
+                    <div class="groups-feature">
+                        <span>📝</span> Share notes with your group
+                    </div>
+                    <div class="groups-feature">
+                        <span>🏆</span> Weekly leaderboards
+                    </div>
+                    <div class="groups-feature">
+                        <span>🔗</span> Easy invite codes
+                    </div>
+                </div>
+            </div>
+            <div class="groups-visual">
+                <div class="leaderboard-preview">
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-rank">🥇</span>
+                        <span class="leaderboard-name">@sarah_studies</span>
+                        <span class="leaderboard-streak">🔥 12</span>
+                    </div>
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-rank">🥈</span>
+                        <span class="leaderboard-name">@mike_learns</span>
+                        <span class="leaderboard-streak">🔥 8</span>
+                    </div>
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-rank">🥉</span>
+                        <span class="leaderboard-name">@study_queen</span>
+                        <span class="leaderboard-streak">🔥 7</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
         <div class="container">
-            <h2>Be the First to Know</h2>
-            <p>Join the waitlist and get early access when we launch.</p>
-            <form class="signup-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-                <input type="email" name="email" placeholder="your@email.com" required>
-                <button type="submit" class="cta-button">Join Waitlist</button>
-            </form>
+            <h2>Ready to Study Smarter?</h2>
+            <p>Join thousands of students who are remembering more and studying less.</p>
+            <a href="#pricing" class="cta-button">Start Your Free Trial →</a>
         </div>
     </section>
 
     <footer>
         <div class="container">
-            <p>© 2026 Quizifications. Study smarter, not harder.</p>
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="/" class="logo">
+                        <img src="assets/icon.png" alt="Quizifications">
+                        Quizifications
+                    </a>
+                    <p>The smart way to study. Get quizzed from your notes and actually remember what you learn.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#groups">Study Groups</a>
+                    <a href="#how-it-works">How It Works</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="mailto:Matt@quizifications.com">Support</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Quizifications. All rights reserved.</p>
+                <div>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="terms.html">Terms</a>
+                    <a href="mailto:Matt@quizifications.com">Matt@quizifications.com</a>
+                </div>
+            </div>
         </div>
     </footer>
 </body>

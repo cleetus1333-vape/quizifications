@@ -60,7 +60,7 @@ function MainTabs() {
           paddingBottom: 8,
           height: 65,
         },
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontSize: 11,

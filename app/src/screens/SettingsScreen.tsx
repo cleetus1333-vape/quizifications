@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { StudyWindow } from '../types';
-import { config, trialCopy } from '../lib/config';
+import { config, trialCopy, cancellationInstructions } from '../lib/config';
 import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 export default function SettingsScreen() {
@@ -182,6 +182,17 @@ export default function SettingsScreen() {
           <Text style={styles.premiumText}>You have full access to all features</Text>
         </View>
       )}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Manage Subscription</Text>
+        <View style={[styles.infoCard, shadows.sm]}>
+          <Text style={styles.infoTitle}>How to Cancel</Text>
+          <Text style={styles.infoLabel}>iOS:</Text>
+          <Text style={styles.infoText}>{cancellationInstructions.ios}</Text>
+          <Text style={[styles.infoLabel, { marginTop: spacing.md }]}>Android:</Text>
+          <Text style={styles.infoText}>{cancellationInstructions.android}</Text>
+        </View>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Study Windows</Text>
@@ -463,6 +474,30 @@ const styles = StyleSheet.create({
   menuItemArrow: {
     fontSize: fontSize.xl,
     color: colors.textMuted,
+  },
+  infoCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  infoTitle: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  infoLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  infoText: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
   footer: {
     alignItems: 'center',
