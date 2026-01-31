@@ -44,6 +44,11 @@ terms.html                     # Terms of service
 about.html                     # About page
 contact.html                   # Contact page with Matt@quizifications.com
 assets/                        # Landing page assets including logo
+app-store/                     # App Store & Google Play submission metadata
+├── ios-app-store-metadata.json
+├── google-play-metadata.json
+├── app-store-description.txt
+└── README.md
 supabase-schema.sql           # Database schema
 supabase-groups-schema.sql    # Study groups schema
 ```
