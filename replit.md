@@ -3,6 +3,13 @@
 ## Overview
 Quizifications is a React Native/Expo mobile app that sends push notification quizzes from user notes. The app features a 3-day free trial followed by premium subscription ($4.99/month or $39.99/year) for unlimited notes, AI-generated quizzes, and study groups (1-20 members). Trial-based model only—no free tier or ads on mobile.
 
+## Brand Identity
+- **Primary Color**: Lime green (#c8ff00)
+- **Background**: Black (#0a0a0b) with elevated cards (#141416, #1a1a1e)
+- **Logo**: Bold "Q" in lime green
+- **Contact**: Matt@quizifications.com
+- **Website**: quizifications.com
+
 ## Project Structure
 ```
 app/                           # React Native/Expo mobile app
@@ -15,12 +22,12 @@ app/                           # React Native/Expo mobile app
 │   ├── hooks/
 │   │   └── useQuiz.ts         # Quiz functionality hook
 │   ├── lib/
-│   │   ├── config.ts          # App config: trial days, pricing, feature flags
+│   │   ├── config.ts          # App config: trial days, pricing, feature flags, URLs
 │   │   ├── supabase.ts        # Supabase client
 │   │   └── notifications.ts   # Push notification handling
 │   ├── screens/
 │   │   ├── HomeScreen.tsx     # Main dashboard with stats
-│   │   ├── SettingsScreen.tsx # User settings and subscription
+│   │   ├── SettingsScreen.tsx # User settings, subscription, account deletion
 │   │   ├── AuthScreen.tsx     # Sign in/sign up
 │   │   ├── QuizScreen.tsx     # Quiz taking interface
 │   │   ├── NotesScreen.tsx    # Notes management (premium)
@@ -28,26 +35,30 @@ app/                           # React Native/Expo mobile app
 │   │   ├── GroupDetailScreen.tsx # Group details and leaderboard
 │   │   └── CategoriesScreen.tsx  # Topic selection
 │   └── types/                 # TypeScript type definitions
-├── assets/                    # App icons and splash screens
+├── assets/                    # App icons and splash screens (lime green Q logo)
 └── package.json
 
 index.html                     # Landing page for web
-assets/                        # Landing page assets
+privacy.html                   # Privacy policy (App Store compliant)
+terms.html                     # Terms of service
+about.html                     # About page
+contact.html                   # Contact page with Matt@quizifications.com
+assets/                        # Landing page assets including logo
 supabase-schema.sql           # Database schema
 supabase-groups-schema.sql    # Study groups schema
 ```
-
-## Design System
-- **Colors**: Purple (#8b5cf6) and Cyan (#06b6d4) gradient theme
-- **Background**: Dark (#0f0f23) with elevated cards (#1a1a2e)
-- **Components**: Rounded corners, soft shadows, gradient buttons
-- **Typography**: System fonts with weight hierarchy
 
 ## Pricing Model
 - **3-Day Free Trial**: Full access to all features
 - **Monthly**: $4.99/month
 - **Yearly**: $39.99/year (save 33%)
 - **Premium Features**: Unlimited notes with AI questions, Study Groups (1-20 members), priority support
+
+## App Store Compliance
+- Account deletion in Settings screen
+- Privacy policy and Terms of Service accessible in app and on web
+- Subscription cancellation instructions for iOS and Android
+- Contact support email accessible
 
 ## Running the Mobile App
 ```bash
@@ -66,7 +77,7 @@ python -m http.server 5000 --bind 0.0.0.0
 - **Notifications**: Expo Notifications
 
 ## Recent Changes
-- 2026-01-31: Redesigned UI with modern purple/cyan gradient theme
-- 2026-01-31: Updated pricing model to 3-day trial (removed free tier)
-- 2026-01-31: Added React.lazy and React.memo for performance optimization
-- 2026-01-31: Wired trial CTAs to Settings screen for upgrade flow
+- 2026-01-31: Rebranded entire app to lime green (#c8ff00) on black theme
+- 2026-01-31: Created complete website: landing page, privacy, terms, about, contact
+- 2026-01-31: Added App Store compliance: account deletion, cancellation instructions
+- 2026-01-31: Updated all contact info to Matt@quizifications.com
