@@ -9,11 +9,12 @@ import {
   Alert,
   Linking,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { StudyWindow } from '../types';
-import { config } from '../lib/config';
-import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
+import { config, trialCopy } from '../lib/config';
+import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 export default function SettingsScreen() {
   const { user, settings, signOut, deleteAccount } = useAuth();
@@ -149,11 +150,43 @@ export default function SettingsScreen() {
   const intervals = [15, 30, 45, 60];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {!user?.is_premium && (
+        <View style={[styles.trialCard, shadows.lg]}>
+          <LinearGradient
+            colors={gradients.primary as [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.trialGradient}
+          >
+            <Text style={styles.trialBadge}>✨ {config.trialDays}-DAY FREE TRIAL</Text>
+            <Text style={styles.trialTitle}>{trialCopy.title}</Text>
+            <View style={styles.trialFeatures}>
+              {trialCopy.features.slice(0, 2).map((feature, i) => (
+                <Text key={i} style={styles.trialFeature}>• {feature}</Text>
+              ))}
+            </View>
+            <TouchableOpacity style={styles.trialButton} activeOpacity={0.9}>
+              <Text style={styles.trialButtonText}>{trialCopy.cta}</Text>
+            </TouchableOpacity>
+            <Text style={styles.trialPricing}>{trialCopy.pricing}</Text>
+          </LinearGradient>
+        </View>
+      )}
+
+      {user?.is_premium && (
+        <View style={[styles.premiumCard, shadows.md]}>
+          <View style={styles.premiumBadge}>
+            <Text style={styles.premiumBadgeText}>⭐ Premium</Text>
+          </View>
+          <Text style={styles.premiumText}>You have full access to all features</Text>
+        </View>
+      )}
+
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>STUDY WINDOWS</Text>
+        <Text style={styles.sectionTitle}>Study Windows</Text>
         {studyWindows.map(window => (
-          <View key={window.id} style={styles.windowRow}>
+          <View key={window.id} style={[styles.card, shadows.sm]}>
             <View>
               <Text style={styles.windowLabel}>{window.label}</Text>
               <Text style={styles.windowTime}>
@@ -163,7 +196,7 @@ export default function SettingsScreen() {
             <Switch
               value={window.is_enabled}
               onValueChange={() => toggleWindow(window)}
-              trackColor={{ false: colors.border, true: colors.accent }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.text}
             />
           </View>
@@ -171,7 +204,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>QUIZ FREQUENCY</Text>
+        <Text style={styles.sectionTitle}>Quiz Frequency</Text>
         <View style={styles.intervalRow}>
           {intervals.map(mins => (
             <TouchableOpacity
@@ -179,8 +212,10 @@ export default function SettingsScreen() {
               style={[
                 styles.intervalButton,
                 quizInterval === mins && styles.intervalButtonSelected,
+                shadows.sm,
               ]}
               onPress={() => updateInterval(mins)}
+              activeOpacity={0.8}
             >
               <Text style={[
                 styles.intervalText,
@@ -194,56 +229,54 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
-        <View style={styles.toggleRow}>
+        <Text style={styles.sectionTitle}>Notifications</Text>
+        <View style={[styles.card, shadows.sm]}>
           <Text style={styles.toggleLabel}>Sound</Text>
           <Switch
             value={soundEnabled}
             onValueChange={updateSound}
-            trackColor={{ false: colors.border, true: colors.accent }}
+            trackColor={{ false: colors.border, true: colors.primary }}
             thumbColor={colors.text}
           />
         </View>
-        <View style={styles.toggleRow}>
+        <View style={[styles.card, shadows.sm]}>
           <Text style={styles.toggleLabel}>Vibrate</Text>
           <Switch
             value={vibrateEnabled}
             onValueChange={updateVibrate}
-            trackColor={{ false: colors.border, true: colors.accent }}
+            trackColor={{ false: colors.border, true: colors.primary }}
             thumbColor={colors.text}
           />
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>ACCOUNT</Text>
+        <Text style={styles.sectionTitle}>Account</Text>
 
-        {user?.is_premium && (
-          <View style={styles.premiumBadge}>
-            <Text style={styles.premiumText}>⭐ Premium Member</Text>
-          </View>
-        )}
-
-        <TouchableOpacity style={styles.menuItem} onPress={openPrivacyPolicy}>
+        <TouchableOpacity style={[styles.menuItem, shadows.sm]} onPress={openPrivacyPolicy} activeOpacity={0.8}>
           <Text style={styles.menuItemText}>Privacy Policy</Text>
+          <Text style={styles.menuItemArrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={openTermsOfService}>
+        <TouchableOpacity style={[styles.menuItem, shadows.sm]} onPress={openTermsOfService} activeOpacity={0.8}>
           <Text style={styles.menuItemText}>Terms of Service</Text>
+          <Text style={styles.menuItemArrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={contactSupport}>
+        <TouchableOpacity style={[styles.menuItem, shadows.sm]} onPress={contactSupport} activeOpacity={0.8}>
           <Text style={styles.menuItemText}>Contact Support</Text>
+          <Text style={styles.menuItemArrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
+        <TouchableOpacity style={[styles.menuItem, shadows.sm]} onPress={handleSignOut} activeOpacity={0.8}>
           <Text style={[styles.menuItemText, { color: colors.warning }]}>Sign Out</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.menuItem} 
+          style={[styles.menuItem, shadows.sm]} 
           onPress={handleDeleteAccount}
           disabled={deleting}
+          activeOpacity={0.8}
         >
           <Text style={[styles.menuItemText, { color: colors.error }]}>
             {deleting ? 'Deleting...' : 'Delete Account'}
@@ -253,7 +286,9 @@ export default function SettingsScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Quizifications v1.0.0</Text>
-        <Text style={styles.footerText}>@{user?.username}</Text>
+        {user?.username && (
+          <Text style={styles.footerUsername}>@{user.username}</Text>
+        )}
       </View>
     </ScrollView>
   );
@@ -271,19 +306,96 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  content: {
     padding: spacing.lg,
+    paddingBottom: spacing.xxxl,
+  },
+  trialCard: {
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    marginBottom: spacing.xl,
+  },
+  trialGradient: {
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  trialBadge: {
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.9)',
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+  },
+  trialTitle: {
+    fontSize: fontSize.xl,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  trialFeatures: {
+    alignSelf: 'flex-start',
+    marginBottom: spacing.lg,
+  },
+  trialFeature: {
+    fontSize: fontSize.sm,
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: spacing.xs,
+  },
+  trialButton: {
+    backgroundColor: colors.text,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.full,
+    marginBottom: spacing.sm,
+  },
+  trialButtonText: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  trialPricing: {
+    fontSize: fontSize.sm,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  premiumCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  premiumBadge: {
+    backgroundColor: colors.goldGlow,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+    marginRight: spacing.md,
+  },
+  premiumBadgeText: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.gold,
+  },
+  premiumText: {
+    flex: 1,
+    fontSize: fontSize.md,
+    color: colors.text,
   },
   section: {
     marginBottom: spacing.xl,
   },
   sectionTitle: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.textSecondary,
-    letterSpacing: 1,
     marginBottom: spacing.md,
+    letterSpacing: 0.5,
   },
-  windowRow: {
+  card: {
     backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
@@ -318,8 +430,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   intervalButtonSelected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   intervalText: {
     fontSize: fontSize.md,
@@ -327,9 +439,13 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   intervalTextSelected: {
-    color: colors.background,
+    color: colors.text,
   },
-  toggleRow: {
+  toggleLabel: {
+    fontSize: fontSize.md,
+    color: colors.text,
+  },
+  menuItem: {
     backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
@@ -340,35 +456,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  toggleLabel: {
-    fontSize: fontSize.md,
-    color: colors.text,
-  },
-  premiumBadge: {
-    backgroundColor: colors.accentGlow,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.accent,
-  },
-  premiumText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.accent,
-    textAlign: 'center',
-  },
-  menuItem: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   menuItemText: {
     fontSize: fontSize.md,
     color: colors.text,
+  },
+  menuItemArrow: {
+    fontSize: fontSize.xl,
+    color: colors.textMuted,
   },
   footer: {
     alignItems: 'center',
@@ -376,7 +470,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
+    color: colors.textMuted,
     marginBottom: spacing.xs,
+  },
+  footerUsername: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
   },
 });

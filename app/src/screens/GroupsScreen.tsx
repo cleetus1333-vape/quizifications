@@ -11,10 +11,12 @@ import {
   Alert,
   Share,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { MAX_GROUP_MEMBERS } from '../types';
-import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
+import { config, trialCopy } from '../lib/config';
+import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 interface Group {
   id: string;
@@ -49,13 +51,39 @@ export default function GroupsScreen({ navigation }: any) {
   if (!user?.is_premium) {
     return (
       <View style={styles.container}>
-        <View style={styles.premiumGate}>
-          <Text style={styles.premiumEmoji}>⭐</Text>
-          <Text style={styles.premiumTitle}>Premium Feature</Text>
-          <Text style={styles.premiumText}>
-            Study Groups are a premium feature. Upgrade to create and join groups, 
-            share notes with classmates, and compete on leaderboards.
+        <View style={styles.trialGate}>
+          <View style={styles.trialIconContainer}>
+            <Text style={styles.trialIcon}>👥</Text>
+          </View>
+          <Text style={styles.trialTitle}>Study Groups</Text>
+          <Text style={styles.trialSubtitle}>
+            Create groups, share notes, and compete on leaderboards with classmates.
           </Text>
+          
+          <View style={styles.featureList}>
+            {['Up to 20 members per group', 'Share notes & questions', 'Weekly leaderboards'].map((feature, i) => (
+              <View key={i} style={styles.featureRow}>
+                <Text style={styles.featureCheck}>✓</Text>
+                <Text style={styles.featureText}>{feature}</Text>
+              </View>
+            ))}
+          </View>
+
+          <TouchableOpacity 
+            style={styles.trialButton} 
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <LinearGradient
+              colors={gradients.primary as [string, string]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.trialButtonGradient}
+            >
+              <Text style={styles.trialButtonText}>{trialCopy.cta}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <Text style={styles.trialPricing}>{trialCopy.pricing}</Text>
         </View>
       </View>
     );
@@ -209,31 +237,38 @@ export default function GroupsScreen({ navigation }: any) {
         <TouchableOpacity 
           style={styles.actionButton}
           onPress={() => setCreateModalVisible(true)}
+          activeOpacity={0.9}
         >
-          <Text style={styles.actionButtonText}>+ Create Group</Text>
+          <LinearGradient
+            colors={gradients.primary as [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.actionButtonGradient}
+          >
+            <Text style={styles.actionButtonText}>+ Create</Text>
+          </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.actionButton, styles.actionButtonSecondary]}
+          style={[styles.actionButtonSecondary, shadows.sm]}
           onPress={() => setJoinModalVisible(true)}
+          activeOpacity={0.8}
         >
           <Text style={styles.actionButtonTextSecondary}>Join Group</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.memberLimitInfo}>
-        <Text style={styles.memberLimitText}>Groups can have up to {MAX_GROUP_MEMBERS} members</Text>
-      </View>
-
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.accent} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : groups.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyEmoji}>👥</Text>
+          <View style={styles.emptyIconContainer}>
+            <Text style={styles.emptyEmoji}>👥</Text>
+          </View>
           <Text style={styles.emptyText}>No groups yet</Text>
           <Text style={styles.emptySubtext}>
-            Create a group for your class or join one with an invite code
+            Create a study group or join one with an invite code
           </Text>
         </View>
       ) : (
@@ -241,10 +276,12 @@ export default function GroupsScreen({ navigation }: any) {
           data={groups}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity 
-              style={styles.groupCard}
+              style={[styles.groupCard, shadows.md]}
               onPress={() => navigation.navigate('GroupDetail', { group: item })}
+              activeOpacity={0.8}
             >
               <View style={styles.groupHeader}>
                 <View style={styles.groupInfo}>
@@ -267,8 +304,14 @@ export default function GroupsScreen({ navigation }: any) {
               )}
 
               <View style={styles.groupFooter}>
-                <Text style={styles.inviteCode}>Code: {item.invite_code}</Text>
-                <TouchableOpacity onPress={() => shareGroup(item)}>
+                <View style={styles.inviteCodeContainer}>
+                  <Text style={styles.inviteCodeLabel}>Code:</Text>
+                  <Text style={styles.inviteCode}>{item.invite_code}</Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.shareButton}
+                  onPress={() => shareGroup(item)}
+                >
                   <Text style={styles.shareText}>Share</Text>
                 </TouchableOpacity>
               </View>
@@ -293,7 +336,7 @@ export default function GroupsScreen({ navigation }: any) {
               disabled={creating || !newGroupName.trim()}
             >
               {creating ? (
-                <ActivityIndicator color={colors.accent} size="small" />
+                <ActivityIndicator color={colors.primary} size="small" />
               ) : (
                 <Text style={[
                   styles.saveText,
@@ -310,7 +353,7 @@ export default function GroupsScreen({ navigation }: any) {
             <TextInput
               style={styles.input}
               placeholder="e.g., BIO 101 - Section 3"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.textMuted}
               value={newGroupName}
               onChangeText={setNewGroupName}
             />
@@ -319,7 +362,7 @@ export default function GroupsScreen({ navigation }: any) {
             <TextInput
               style={[styles.input, styles.inputMultiline]}
               placeholder="e.g., Study group for Professor Smith's class"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.textMuted}
               value={newGroupDescription}
               onChangeText={setNewGroupDescription}
               multiline
@@ -351,7 +394,7 @@ export default function GroupsScreen({ navigation }: any) {
               disabled={joining || !joinCode.trim()}
             >
               {joining ? (
-                <ActivityIndicator color={colors.accent} size="small" />
+                <ActivityIndicator color={colors.primary} size="small" />
               ) : (
                 <Text style={[
                   styles.saveText,
@@ -368,7 +411,7 @@ export default function GroupsScreen({ navigation }: any) {
             <TextInput
               style={[styles.input, styles.codeInput]}
               placeholder="ABC123"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.textMuted}
               value={joinCode}
               onChangeText={(text) => setJoinCode(text.toUpperCase())}
               autoCapitalize="characters"
@@ -397,34 +440,31 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+  },
+  actionButtonGradient: {
     padding: spacing.md,
     alignItems: 'center',
   },
   actionButtonSecondary: {
+    flex: 1,
     backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
   actionButtonText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.background,
+    color: colors.text,
   },
   actionButtonTextSecondary: {
     fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.text,
-  },
-  memberLimitInfo: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  memberLimitText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -435,11 +475,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: spacing.xxl,
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.cardElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
   },
   emptyEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.md,
+    fontSize: 48,
   },
   emptyText: {
     fontSize: fontSize.xl,
@@ -485,17 +533,17 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   adminBadge: {
-    backgroundColor: colors.accentGlow,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm,
+    backgroundColor: colors.primaryGlow,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
     borderWidth: 1,
-    borderColor: colors.accent,
+    borderColor: colors.primary,
   },
   adminBadgeText: {
     fontSize: fontSize.xs,
     fontWeight: '600',
-    color: colors.accent,
+    color: colors.primary,
   },
   groupDescription: {
     fontSize: fontSize.sm,
@@ -511,14 +559,31 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
+  inviteCodeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  inviteCodeLabel: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
   inviteCode: {
     fontSize: fontSize.sm,
+    fontWeight: '600',
     color: colors.textSecondary,
+    letterSpacing: 1,
+  },
+  shareButton: {
+    backgroundColor: colors.primaryGlow,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
   },
   shareText: {
     fontSize: fontSize.sm,
     fontWeight: '600',
-    color: colors.accent,
+    color: colors.primary,
   },
   modalContainer: {
     flex: 1,
@@ -544,7 +609,7 @@ const styles = StyleSheet.create({
   saveText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.accent,
+    color: colors.primary,
   },
   saveTextDisabled: {
     opacity: 0.5,
@@ -586,16 +651,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   tipBox: {
-    backgroundColor: colors.accentGlow,
+    backgroundColor: colors.primaryGlow,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.accent,
+    borderColor: colors.primary,
   },
   tipTitle: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.accent,
+    color: colors.primary,
     marginBottom: spacing.xs,
   },
   tipText: {
@@ -603,26 +668,74 @@ const styles = StyleSheet.create({
     color: colors.text,
     lineHeight: 20,
   },
-  premiumGate: {
+  trialGate: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: spacing.xxl,
   },
-  premiumEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
+  trialIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.primaryGlow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
   },
-  premiumTitle: {
-    fontSize: fontSize.xl,
+  trialIcon: {
+    fontSize: 48,
+  },
+  trialTitle: {
+    fontSize: fontSize.xxl,
     fontWeight: '700',
-    color: colors.accent,
-    marginBottom: spacing.md,
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
-  premiumText: {
+  trialSubtitle: {
     fontSize: fontSize.md,
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  featureList: {
+    width: '100%',
+    marginBottom: spacing.xl,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  featureCheck: {
+    fontSize: fontSize.md,
+    color: colors.success,
+    marginRight: spacing.md,
+    fontWeight: '700',
+  },
+  featureText: {
+    fontSize: fontSize.md,
+    color: colors.text,
+  },
+  trialButton: {
+    width: '100%',
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+  },
+  trialButtonGradient: {
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  trialButtonText: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  trialPricing: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
 });

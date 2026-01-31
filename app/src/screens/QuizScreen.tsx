@@ -1,5 +1,3 @@
-// src/screens/QuizScreen.tsx
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -8,10 +6,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useQuiz } from '../hooks/useQuiz';
 import { QuizQuestion } from '../types';
-import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
+import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 export default function QuizScreen({ navigation, route }: any) {
   const { getRandomQuestion, recordAttempt, loading } = useQuiz();
@@ -19,7 +18,6 @@ export default function QuizScreen({ navigation, route }: any) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  // Check if question was passed from notification
   const notificationQuestion = route.params?.question;
 
   useEffect(() => {
@@ -73,67 +71,88 @@ export default function QuizScreen({ navigation, route }: any) {
   if (loading || !question) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.accent} />
-        <Text style={styles.loadingText}>Loading question...</Text>
+        <View style={styles.loadingCard}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading question...</Text>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Source badge */}
-      <View style={styles.sourceBadge}>
+      <View style={[styles.sourceBadge, shadows.sm]}>
         <Text style={styles.sourceText}>
           {question.source === 'note' ? '📝' : '📚'} {question.sourceName}
         </Text>
       </View>
 
-      {/* Question */}
-      <View style={styles.questionCard}>
+      <View style={[styles.questionCard, shadows.md]}>
         <Text style={styles.questionText}>{question.question}</Text>
       </View>
 
-      {/* Answers */}
       <View style={styles.answersContainer}>
         {question.answers.map((answer, index) => (
           <TouchableOpacity
             key={index}
-            style={getAnswerStyle(index)}
+            style={[getAnswerStyle(index), shadows.sm]}
             onPress={() => handleAnswer(index)}
             disabled={showResult}
+            activeOpacity={0.8}
           >
-            <Text style={[
-              styles.answerText,
-              showResult && index === question.correctIndex && styles.answerTextCorrect,
-              showResult && index === selectedIndex && index !== question.correctIndex && styles.answerTextWrong,
-            ]}>
-              {answer}
-            </Text>
+            <View style={styles.answerContent}>
+              <View style={[
+                styles.answerIndicator,
+                showResult && index === question.correctIndex && styles.indicatorCorrect,
+                showResult && index === selectedIndex && index !== question.correctIndex && styles.indicatorWrong,
+              ]}>
+                <Text style={styles.answerLetter}>
+                  {String.fromCharCode(65 + index)}
+                </Text>
+              </View>
+              <Text style={[
+                styles.answerText,
+                showResult && index === question.correctIndex && styles.answerTextCorrect,
+                showResult && index === selectedIndex && index !== question.correctIndex && styles.answerTextWrong,
+              ]}>
+                {answer}
+              </Text>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Result & Next */}
       {showResult && (
         <View style={styles.resultContainer}>
-          <Text style={[
-            styles.resultText,
-            selectedIndex === question.correctIndex ? styles.resultCorrect : styles.resultWrong
+          <View style={[
+            styles.resultBadge,
+            selectedIndex === question.correctIndex ? styles.resultBadgeCorrect : styles.resultBadgeWrong
           ]}>
-            {selectedIndex === question.correctIndex ? '✓ Correct!' : '✗ Wrong'}
-          </Text>
+            <Text style={styles.resultText}>
+              {selectedIndex === question.correctIndex ? '✓ Correct!' : '✗ Incorrect'}
+            </Text>
+          </View>
 
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={styles.nextButton}
               onPress={loadQuestion}
+              activeOpacity={0.9}
             >
-              <Text style={styles.nextButtonText}>Next Question</Text>
+              <LinearGradient
+                colors={gradients.primary as [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.nextButtonGradient}
+              >
+                <Text style={styles.nextButtonText}>Next Question</Text>
+              </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.doneButton}
+              style={[styles.doneButton, shadows.sm]}
               onPress={() => navigation.goBack()}
+              activeOpacity={0.8}
             >
               <Text style={styles.doneButtonText}>Done</Text>
             </TouchableOpacity>
@@ -155,16 +174,24 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: spacing.lg,
+  },
+  loadingCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xxl,
+    alignItems: 'center',
+    ...shadows.lg,
   },
   loadingText: {
     color: colors.textSecondary,
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     fontSize: fontSize.md,
   },
   sourceBadge: {
     alignSelf: 'flex-start',
     backgroundColor: colors.card,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
     marginBottom: spacing.lg,
@@ -174,6 +201,7 @@ const styles = StyleSheet.create({
   sourceText: {
     color: colors.textSecondary,
     fontSize: fontSize.sm,
+    fontWeight: '500',
   },
   questionCard: {
     backgroundColor: colors.card,
@@ -200,27 +228,52 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   answerSelected: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.cardElevated,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     borderWidth: 2,
-    borderColor: colors.accent,
+    borderColor: colors.primary,
   },
   answerCorrect: {
-    backgroundColor: 'rgba(0, 210, 106, 0.15)',
+    backgroundColor: colors.successGlow,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     borderWidth: 2,
     borderColor: colors.success,
   },
   answerWrong: {
-    backgroundColor: 'rgba(255, 77, 77, 0.15)',
+    backgroundColor: colors.errorGlow,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     borderWidth: 2,
     borderColor: colors.error,
   },
+  answerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  answerIndicator: {
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.cardElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  indicatorCorrect: {
+    backgroundColor: colors.success,
+  },
+  indicatorWrong: {
+    backgroundColor: colors.error,
+  },
+  answerLetter: {
+    color: colors.text,
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+  },
   answerText: {
+    flex: 1,
     color: colors.text,
     fontSize: fontSize.md,
     fontWeight: '500',
@@ -235,30 +288,43 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     alignItems: 'center',
   },
-  resultText: {
-    fontSize: fontSize.xl,
-    fontWeight: '700',
+  resultBadge: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.full,
     marginBottom: spacing.lg,
   },
-  resultCorrect: {
-    color: colors.success,
+  resultBadgeCorrect: {
+    backgroundColor: colors.successGlow,
+    borderWidth: 1,
+    borderColor: colors.success,
   },
-  resultWrong: {
-    color: colors.error,
+  resultBadgeWrong: {
+    backgroundColor: colors.errorGlow,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  resultText: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
   },
   buttonRow: {
     flexDirection: 'row',
     gap: spacing.md,
+    width: '100%',
   },
   nextButton: {
-    flex: 1,
-    backgroundColor: colors.accent,
+    flex: 2,
     borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+  },
+  nextButtonGradient: {
     padding: spacing.lg,
     alignItems: 'center',
   },
   nextButtonText: {
-    color: colors.background,
+    color: colors.text,
     fontSize: fontSize.md,
     fontWeight: '700',
   },

@@ -1,6 +1,4 @@
-// src/screens/CategoriesScreen.tsx
-
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,11 +6,13 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Category } from '../types';
-import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
+import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 export default function CategoriesScreen() {
   const { user } = useAuth();
@@ -27,7 +27,6 @@ export default function CategoriesScreen() {
 
   const loadData = async () => {
     try {
-      // Load all categories
       const { data: cats } = await supabase
         .from('categories')
         .select('*')
@@ -36,7 +35,6 @@ export default function CategoriesScreen() {
 
       setCategories(cats || []);
 
-      // Load user's selected categories
       if (user) {
         const { data: userCats } = await supabase
           .from('user_categories')
@@ -71,13 +69,11 @@ export default function CategoriesScreen() {
     setSaving(true);
 
     try {
-      // Delete existing selections
       await supabase
         .from('user_categories')
         .delete()
         .eq('user_id', user.id);
 
-      // Insert new selections
       if (selectedIds.size > 0) {
         const inserts = Array.from(selectedIds).map(categoryId => ({
           user_id: user.id,
@@ -87,10 +83,10 @@ export default function CategoriesScreen() {
         await supabase.from('user_categories').insert(inserts);
       }
 
-      alert('Categories saved!');
+      Alert.alert('Saved!', 'Your topics have been updated');
     } catch (error) {
       console.error('Error saving categories:', error);
-      alert('Failed to save categories');
+      Alert.alert('Error', 'Failed to save topics');
     } finally {
       setSaving(false);
     }
@@ -107,7 +103,7 @@ export default function CategoriesScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -118,6 +114,7 @@ export default function CategoriesScreen() {
         data={Object.entries(groupedCategories)}
         keyExtractor={([subject]) => subject}
         contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item: [subject, cats] }) => (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{subject}</Text>
@@ -127,12 +124,19 @@ export default function CategoriesScreen() {
                 style={[
                   styles.categoryCard,
                   selectedIds.has(category.id) && styles.categoryCardSelected,
+                  shadows.sm,
                 ]}
                 onPress={() => toggleCategory(category.id)}
+                activeOpacity={0.8}
               >
                 <View style={styles.categoryLeft}>
-                  <Text style={styles.categoryIcon}>{category.icon}</Text>
-                  <View>
+                  <View style={[
+                    styles.categoryIconBg,
+                    selectedIds.has(category.id) && styles.categoryIconBgSelected,
+                  ]}>
+                    <Text style={styles.categoryIcon}>{category.icon}</Text>
+                  </View>
+                  <View style={styles.categoryInfo}>
                     <Text style={styles.categoryName}>{category.name}</Text>
                     <Text style={styles.categoryCount}>
                       {category.question_count} questions
@@ -153,19 +157,27 @@ export default function CategoriesScreen() {
         )}
       />
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, shadows.lg]}>
         <TouchableOpacity 
           style={styles.saveButton}
           onPress={saveSelections}
           disabled={saving}
+          activeOpacity={0.9}
         >
-          {saving ? (
-            <ActivityIndicator color={colors.background} />
-          ) : (
-            <Text style={styles.saveButtonText}>
-              Save ({selectedIds.size} selected)
-            </Text>
-          )}
+          <LinearGradient
+            colors={gradients.primary as [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.saveButtonGradient}
+          >
+            {saving ? (
+              <ActivityIndicator color={colors.text} />
+            ) : (
+              <Text style={styles.saveButtonText}>
+                Save Selection ({selectedIds.size})
+              </Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </View>
@@ -185,16 +197,16 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: spacing.lg,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   section: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   sectionTitle: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     fontWeight: '600',
     color: colors.textSecondary,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: spacing.md,
   },
@@ -210,16 +222,31 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   categoryCardSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentGlow,
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryGlow,
   },
   categoryLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    flex: 1,
+  },
+  categoryIconBg: {
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.cardElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  categoryIconBgSelected: {
+    backgroundColor: colors.primary,
   },
   categoryIcon: {
-    fontSize: 28,
+    fontSize: 24,
+  },
+  categoryInfo: {
+    flex: 1,
   },
   categoryName: {
     fontSize: fontSize.md,
@@ -232,20 +259,20 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: borderRadius.sm,
+    width: 26,
+    height: 26,
+    borderRadius: borderRadius.xs,
     borderWidth: 2,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxSelected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   checkmark: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: '700',
     fontSize: 14,
   },
@@ -255,19 +282,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: spacing.lg,
+    paddingBottom: spacing.xl,
     backgroundColor: colors.background,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
   saveButton: {
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+  },
+  saveButtonGradient: {
     padding: spacing.lg,
     alignItems: 'center',
   },
   saveButtonText: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
     fontWeight: '700',
-    color: colors.background,
+    color: colors.text,
   },
 });

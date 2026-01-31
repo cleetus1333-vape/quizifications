@@ -1,5 +1,3 @@
-// src/screens/NotesScreen.tsx
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -14,14 +12,16 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Note } from '../types';
-import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
+import { trialCopy } from '../lib/config';
+import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 
-export default function NotesScreen() {
+export default function NotesScreen({ navigation }: any) {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,13 +42,39 @@ export default function NotesScreen() {
   if (!user?.is_premium) {
     return (
       <View style={styles.container}>
-        <View style={styles.premiumGate}>
-          <Text style={styles.premiumEmoji}>⭐</Text>
-          <Text style={styles.premiumTitle}>Premium Feature</Text>
-          <Text style={styles.premiumText}>
-            Create custom notes and let AI generate quiz questions from them. 
-            Upgrade to premium to unlock this feature.
+        <View style={styles.trialGate}>
+          <View style={styles.trialIconContainer}>
+            <Text style={styles.trialIcon}>📝</Text>
+          </View>
+          <Text style={styles.trialTitle}>Smart Notes</Text>
+          <Text style={styles.trialSubtitle}>
+            Add your study notes and let AI generate quiz questions automatically.
           </Text>
+          
+          <View style={styles.featureList}>
+            {['AI-generated quiz questions', 'Unlimited notes', 'Syllabus support'].map((feature, i) => (
+              <View key={i} style={styles.featureRow}>
+                <Text style={styles.featureCheck}>✓</Text>
+                <Text style={styles.featureText}>{feature}</Text>
+              </View>
+            ))}
+          </View>
+
+          <TouchableOpacity 
+            style={styles.trialButton} 
+            activeOpacity={0.9}
+            onPress={() => navigation?.navigate?.('Settings')}
+          >
+            <LinearGradient
+              colors={gradients.primary as [string, string]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.trialButtonGradient}
+            >
+              <Text style={styles.trialButtonText}>{trialCopy.cta}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <Text style={styles.trialPricing}>{trialCopy.pricing}</Text>
         </View>
       </View>
     );
@@ -109,7 +135,6 @@ ${content}`,
       const questionsText = data.content[0].text;
       const questions = JSON.parse(questionsText);
 
-      // Insert questions
       const questionInserts = questions.map((q: any) => ({
         note_id: noteId,
         user_id: user.id,
@@ -122,7 +147,6 @@ ${content}`,
 
       await supabase.from('note_questions').insert(questionInserts);
 
-      // Update note question count
       await supabase
         .from('notes')
         .update({ question_count: questions.length })
@@ -140,7 +164,6 @@ ${content}`,
     setGenerating(true);
 
     try {
-      // Insert note
       const { data: note, error } = await supabase
         .from('notes')
         .insert({
@@ -154,12 +177,10 @@ ${content}`,
 
       if (error) throw error;
 
-      // Generate questions
       const count = await generateQuestions(note.id, newContent);
 
       Alert.alert('Success!', `Created ${count} questions from your notes`);
 
-      // Reset and reload
       setNewTitle('');
       setNewContent('');
       setIsSyllabus(false);
@@ -195,11 +216,13 @@ ${content}`,
     <View style={styles.container}>
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.accent} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : notes.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyEmoji}>📝</Text>
+          <View style={styles.emptyIconContainer}>
+            <Text style={styles.emptyEmoji}>📝</Text>
+          </View>
           <Text style={styles.emptyText}>No notes yet</Text>
           <Text style={styles.emptySubtext}>
             Add your first note and we'll generate quiz questions from it
@@ -210,15 +233,19 @@ ${content}`,
           data={notes}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity 
-              style={styles.noteCard}
+              style={[styles.noteCard, shadows.md]}
               onLongPress={() => deleteNote(item)}
+              activeOpacity={0.8}
             >
               <View style={styles.noteHeader}>
-                <Text style={styles.noteIcon}>
-                  {item.is_syllabus ? '📋' : '📄'}
-                </Text>
+                <View style={[styles.noteIconBg, item.is_syllabus ? { backgroundColor: colors.goldGlow } : { backgroundColor: colors.accentGlow }]}>
+                  <Text style={styles.noteIcon}>
+                    {item.is_syllabus ? '📋' : '📄'}
+                  </Text>
+                </View>
                 <View style={styles.noteInfo}>
                   <Text style={styles.noteTitle}>{item.title}</Text>
                   <Text style={styles.noteCount}>
@@ -234,15 +261,21 @@ ${content}`,
         />
       )}
 
-      {/* Add Button */}
       <TouchableOpacity 
-        style={styles.addButton}
+        style={[styles.addButton, shadows.lg]}
         onPress={() => setModalVisible(true)}
+        activeOpacity={0.9}
       >
-        <Text style={styles.addButtonText}>+ Add Notes</Text>
+        <LinearGradient
+          colors={gradients.primary as [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.addButtonGradient}
+        >
+          <Text style={styles.addButtonText}>+ Add Notes</Text>
+        </LinearGradient>
       </TouchableOpacity>
 
-      {/* Add Note Modal */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -262,7 +295,7 @@ ${content}`,
               disabled={generating || !newTitle.trim() || !newContent.trim()}
             >
               {generating ? (
-                <ActivityIndicator color={colors.accent} size="small" />
+                <ActivityIndicator color={colors.primary} size="small" />
               ) : (
                 <Text style={[
                   styles.saveText,
@@ -277,7 +310,7 @@ ${content}`,
           <TextInput
             style={styles.titleInput}
             placeholder="Title (e.g., Bio Chapter 3)"
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.textMuted}
             value={newTitle}
             onChangeText={setNewTitle}
           />
@@ -285,7 +318,7 @@ ${content}`,
           <TextInput
             style={styles.contentInput}
             placeholder="Paste your notes here..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.textMuted}
             value={newContent}
             onChangeText={setNewContent}
             multiline
@@ -295,6 +328,7 @@ ${content}`,
           <TouchableOpacity 
             style={styles.syllabusToggle}
             onPress={() => setIsSyllabus(!isSyllabus)}
+            activeOpacity={0.7}
           >
             <View style={[
               styles.checkbox,
@@ -307,8 +341,11 @@ ${content}`,
 
           {generating && (
             <View style={styles.generatingOverlay}>
-              <ActivityIndicator size="large" color={colors.accent} />
-              <Text style={styles.generatingText}>Generating questions...</Text>
+              <View style={styles.generatingCard}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.generatingText}>Generating questions...</Text>
+                <Text style={styles.generatingSubtext}>This may take a moment</Text>
+              </View>
             </View>
           )}
         </KeyboardAvoidingView>
@@ -331,11 +368,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: spacing.xxl,
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.cardElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
   },
   emptyEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.md,
+    fontSize: 48,
   },
   emptyText: {
     fontSize: fontSize.xl,
@@ -350,7 +395,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: spacing.lg,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   noteCard: {
     backgroundColor: colors.card,
@@ -363,11 +408,18 @@ const styles = StyleSheet.create({
   noteHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  noteIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
   },
   noteIcon: {
-    fontSize: 24,
-    marginRight: spacing.md,
+    fontSize: 22,
   },
   noteInfo: {
     flex: 1,
@@ -384,23 +436,25 @@ const styles = StyleSheet.create({
   },
   notePreview: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
+    color: colors.textMuted,
     lineHeight: 20,
   },
   addButton: {
     position: 'absolute',
-    bottom: spacing.xl,
+    bottom: spacing.xxl,
     left: spacing.lg,
     right: spacing.lg,
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+  },
+  addButtonGradient: {
     padding: spacing.lg,
     alignItems: 'center',
   },
   addButtonText: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
     fontWeight: '700',
-    color: colors.background,
+    color: colors.text,
   },
   modalContainer: {
     flex: 1,
@@ -426,7 +480,7 @@ const styles = StyleSheet.create({
   saveText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.accent,
+    color: colors.primary,
   },
   saveTextDisabled: {
     opacity: 0.5,
@@ -462,7 +516,7 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: borderRadius.sm,
+    borderRadius: borderRadius.xs,
     borderWidth: 2,
     borderColor: colors.border,
     alignItems: 'center',
@@ -470,11 +524,11 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   checkboxSelected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   checkmark: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: '700',
   },
   syllabusLabel: {
@@ -483,35 +537,96 @@ const styles = StyleSheet.create({
   },
   generatingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(10, 10, 11, 0.9)',
+    backgroundColor: 'rgba(15, 15, 18, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  generatingCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xxl,
+    alignItems: 'center',
+    ...shadows.lg,
   },
   generatingText: {
     color: colors.text,
-    fontSize: fontSize.md,
-    marginTop: spacing.md,
+    fontSize: fontSize.lg,
+    fontWeight: '600',
+    marginTop: spacing.lg,
   },
-  premiumGate: {
+  generatingSubtext: {
+    color: colors.textSecondary,
+    fontSize: fontSize.sm,
+    marginTop: spacing.xs,
+  },
+  trialGate: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: spacing.xxl,
   },
-  premiumEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
+  trialIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.primaryGlow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
   },
-  premiumTitle: {
-    fontSize: fontSize.xl,
+  trialIcon: {
+    fontSize: 48,
+  },
+  trialTitle: {
+    fontSize: fontSize.xxl,
     fontWeight: '700',
-    color: colors.accent,
-    marginBottom: spacing.md,
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
-  premiumText: {
+  trialSubtitle: {
     fontSize: fontSize.md,
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  featureList: {
+    width: '100%',
+    marginBottom: spacing.xl,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  featureCheck: {
+    fontSize: fontSize.md,
+    color: colors.success,
+    marginRight: spacing.md,
+    fontWeight: '700',
+  },
+  featureText: {
+    fontSize: fontSize.md,
+    color: colors.text,
+  },
+  trialButton: {
+    width: '100%',
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+  },
+  trialButtonGradient: {
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  trialButtonText: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  trialPricing: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
 });

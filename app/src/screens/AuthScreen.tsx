@@ -1,5 +1,3 @@
-// src/screens/AuthScreen.tsx
-
 import React, { useState } from 'react';
 import {
   View,
@@ -11,8 +9,10 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
-import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
+import { config } from '../lib/config';
+import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 export default function AuthScreen() {
   const { signIn, signUp } = useAuth();
@@ -48,129 +48,219 @@ export default function AuthScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.content}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoIcon}>🧠</Text>
-          <Text style={styles.logoText}>Quizifications</Text>
-        </View>
-
-        <Text style={styles.tagline}>
-          {isSignUp 
-            ? 'Create your account' 
-            : 'Welcome back'}
-        </Text>
-
-        {/* Form */}
-        <View style={styles.form}>
-          {isSignUp && (
-            <TextInput
-              style={styles.input}
-              placeholder="Username"
-              placeholderTextColor={colors.textSecondary}
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          )}
-
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor={colors.textSecondary}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor={colors.textSecondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
-          {error ? (
-            <Text style={styles.error}>{error}</Text>
-          ) : null}
-
-          <TouchableOpacity 
-            style={styles.submitButton}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.background} />
-            ) : (
-              <Text style={styles.submitButtonText}>
-                {isSignUp ? 'Create Account' : 'Sign In'}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Toggle */}
-        <TouchableOpacity 
-          style={styles.toggle}
-          onPress={() => {
-            setIsSignUp(!isSignUp);
-            setError('');
-          }}
+    <View style={styles.container}>
+      <LinearGradient
+        colors={[colors.backgroundGradientStart, colors.backgroundGradientEnd]}
+        style={styles.gradient}
+      >
+        <KeyboardAvoidingView 
+          style={styles.content}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <Text style={styles.toggleText}>
-            {isSignUp 
-              ? 'Already have an account? Sign in' 
-              : "Don't have an account? Sign up"}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Text style={styles.logoIcon}>🧠</Text>
+            </View>
+            <Text style={styles.logoText}>Quizifications</Text>
+            <Text style={styles.tagline}>Master any subject with smart quizzes</Text>
+          </View>
+
+          <View style={[styles.card, shadows.lg]}>
+            <View style={styles.tabs}>
+              <TouchableOpacity
+                style={[styles.tab, !isSignUp && styles.tabActive]}
+                onPress={() => { setIsSignUp(false); setError(''); }}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.tabText, !isSignUp && styles.tabTextActive]}>
+                  Sign In
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tab, isSignUp && styles.tabActive]}
+                onPress={() => { setIsSignUp(true); setError(''); }}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.tabText, isSignUp && styles.tabTextActive]}>
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.form}>
+              {isSignUp && (
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Username</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="yourname"
+                    placeholderTextColor={colors.textMuted}
+                    value={username}
+                    onChangeText={setUsername}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
+              )}
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="you@example.com"
+                  placeholderTextColor={colors.textMuted}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  placeholderTextColor={colors.textMuted}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                />
+              </View>
+
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.error}>{error}</Text>
+                </View>
+              ) : null}
+
+              <TouchableOpacity 
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={loading}
+                activeOpacity={0.9}
+              >
+                <LinearGradient
+                  colors={gradients.primary as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.submitGradient}
+                >
+                  {loading ? (
+                    <ActivityIndicator color={colors.text} />
+                  ) : (
+                    <Text style={styles.submitButtonText}>
+                      {isSignUp ? 'Create Account' : 'Sign In'}
+                    </Text>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+
+            {isSignUp && (
+              <View style={styles.trialBanner}>
+                <Text style={styles.trialText}>
+                  ✨ Start with a {config.trialDays}-day free trial
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <Text style={styles.footer}>
+            By continuing, you agree to our Terms & Privacy Policy
           </Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+  },
+  gradient: {
+    flex: 1,
   },
   content: {
     flex: 1,
-    padding: spacing.lg,
     justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: spacing.xxl,
   },
   logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.primaryGlow,
     alignItems: 'center',
-    marginBottom: spacing.md,
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+    ...shadows.md,
   },
   logoIcon: {
-    fontSize: 64,
-    marginBottom: spacing.sm,
+    fontSize: 40,
   },
   logoText: {
-    fontSize: fontSize.xxl,
+    fontSize: fontSize.xxxl,
     fontWeight: '800',
     color: colors.text,
+    letterSpacing: -1,
   },
   tagline: {
-    fontSize: fontSize.lg,
+    fontSize: fontSize.md,
     color: colors.textSecondary,
-    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.cardElevated,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xs,
     marginBottom: spacing.xl,
   },
+  tab: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    borderRadius: borderRadius.md,
+  },
+  tabActive: {
+    backgroundColor: colors.primary,
+  },
+  tabText: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  tabTextActive: {
+    color: colors.text,
+  },
   form: {
-    gap: spacing.md,
+    gap: spacing.sm,
+  },
+  inputContainer: {
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.cardElevated,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     fontSize: fontSize.md,
@@ -178,29 +268,43 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  errorContainer: {
+    backgroundColor: colors.errorGlow,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+  },
   error: {
     color: colors.error,
     fontSize: fontSize.sm,
     textAlign: 'center',
   },
   submitButton: {
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    marginTop: spacing.md,
+  },
+  submitGradient: {
     padding: spacing.lg,
     alignItems: 'center',
-    marginTop: spacing.sm,
   },
   submitButtonText: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
     fontWeight: '700',
-    color: colors.background,
+    color: colors.text,
   },
-  toggle: {
-    marginTop: spacing.xl,
+  trialBanner: {
+    marginTop: spacing.lg,
     alignItems: 'center',
   },
-  toggleText: {
-    color: colors.accent,
-    fontSize: fontSize.md,
+  trialText: {
+    fontSize: fontSize.sm,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  footer: {
+    textAlign: 'center',
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    marginTop: spacing.xl,
   },
 });

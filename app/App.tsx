@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -14,28 +14,39 @@ import {
 import { useQuiz } from './src/hooks/useQuiz';
 import { colors } from './src/constants/theme';
 
-import AuthScreen from './src/screens/AuthScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import QuizScreen from './src/screens/QuizScreen';
-import CategoriesScreen from './src/screens/CategoriesScreen';
-import NotesScreen from './src/screens/NotesScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
-import GroupsScreen from './src/screens/GroupsScreen';
-import GroupDetailScreen from './src/screens/GroupDetailScreen';
+const AuthScreen = lazy(() => import('./src/screens/AuthScreen'));
+const HomeScreen = lazy(() => import('./src/screens/HomeScreen'));
+const QuizScreen = lazy(() => import('./src/screens/QuizScreen'));
+const CategoriesScreen = lazy(() => import('./src/screens/CategoriesScreen'));
+const NotesScreen = lazy(() => import('./src/screens/NotesScreen'));
+const SettingsScreen = lazy(() => import('./src/screens/SettingsScreen'));
+const GroupsScreen = lazy(() => import('./src/screens/GroupsScreen'));
+const GroupDetailScreen = lazy(() => import('./src/screens/GroupDetailScreen'));
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+function LoadingFallback() {
   return (
-    <Text style={{ 
-      fontSize: 24, 
-      opacity: focused ? 1 : 0.5 
+    <View style={{ 
+      flex: 1, 
+      backgroundColor: colors.background, 
+      justifyContent: 'center', 
+      alignItems: 'center' 
     }}>
-      {emoji}
-    </Text>
+      <ActivityIndicator size="large" color={colors.primary} />
+    </View>
   );
 }
+
+const TabIcon = React.memo(({ emoji, focused }: { emoji: string; focused: boolean }) => (
+  <Text style={{ 
+    fontSize: 24, 
+    opacity: focused ? 1 : 0.5 
+  }}>
+    {emoji}
+  </Text>
+));
 
 function MainTabs() {
   return (
@@ -47,10 +58,14 @@ function MainTabs() {
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 8,
-          height: 60,
+          height: 65,
         },
-        tabBarActiveTintColor: colors.accent,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+        },
         headerStyle: {
           backgroundColor: colors.background,
         },
@@ -60,19 +75,31 @@ function MainTabs() {
     >
       <Tab.Screen 
         name="Home" 
-        component={HomeScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
           headerTitle: 'Quizifications',
+          tabBarLabel: 'Home',
         }}
-      />
+      >
+        {() => (
+          <Suspense fallback={<LoadingFallback />}>
+            <HomeScreen />
+          </Suspense>
+        )}
+      </Tab.Screen>
       <Tab.Screen 
         name="Settings" 
-        component={SettingsScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
+          tabBarLabel: 'Settings',
         }}
-      />
+      >
+        {() => (
+          <Suspense fallback={<LoadingFallback />}>
+            <SettingsScreen />
+          </Suspense>
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -104,16 +131,7 @@ function AppNavigator() {
   }, []);
 
   if (loading) {
-    return (
-      <View style={{ 
-        flex: 1, 
-        backgroundColor: colors.background, 
-        justifyContent: 'center', 
-        alignItems: 'center' 
-      }}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+    return <LoadingFallback />;
   }
 
   return (
@@ -132,9 +150,14 @@ function AppNavigator() {
       {!user ? (
         <Stack.Screen 
           name="Auth" 
-          component={AuthScreen}
           options={{ headerShown: false }}
-        />
+        >
+          {() => (
+            <Suspense fallback={<LoadingFallback />}>
+              <AuthScreen />
+            </Suspense>
+          )}
+        </Stack.Screen>
       ) : (
         <>
           <Stack.Screen 
@@ -144,32 +167,57 @@ function AppNavigator() {
           />
           <Stack.Screen 
             name="Quiz" 
-            component={QuizScreen}
             options={{ 
               title: 'Quiz',
               presentation: 'modal',
             }}
-          />
+          >
+            {(props) => (
+              <Suspense fallback={<LoadingFallback />}>
+                <QuizScreen {...props} />
+              </Suspense>
+            )}
+          </Stack.Screen>
           <Stack.Screen 
             name="Categories" 
-            component={CategoriesScreen}
             options={{ title: 'Study Topics' }}
-          />
+          >
+            {() => (
+              <Suspense fallback={<LoadingFallback />}>
+                <CategoriesScreen />
+              </Suspense>
+            )}
+          </Stack.Screen>
           <Stack.Screen 
             name="Notes" 
-            component={NotesScreen}
             options={{ title: 'My Notes' }}
-          />
+          >
+            {() => (
+              <Suspense fallback={<LoadingFallback />}>
+                <NotesScreen />
+              </Suspense>
+            )}
+          </Stack.Screen>
           <Stack.Screen 
             name="Groups" 
-            component={GroupsScreen}
             options={{ title: 'Study Groups' }}
-          />
+          >
+            {(props) => (
+              <Suspense fallback={<LoadingFallback />}>
+                <GroupsScreen {...props} />
+              </Suspense>
+            )}
+          </Stack.Screen>
           <Stack.Screen 
             name="GroupDetail" 
-            component={GroupDetailScreen}
             options={{ title: 'Group' }}
-          />
+          >
+            {(props) => (
+              <Suspense fallback={<LoadingFallback />}>
+                <GroupDetailScreen {...props} />
+              </Suspense>
+            )}
+          </Stack.Screen>
         </>
       )}
     </Stack.Navigator>

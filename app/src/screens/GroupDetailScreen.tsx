@@ -1,6 +1,4 @@
-// src/screens/GroupDetailScreen.tsx
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import {
   View,
   Text,
@@ -12,11 +10,12 @@ import {
   Alert,
   Share,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Note } from '../types';
-import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
+import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -33,6 +32,42 @@ interface SharedNote {
   question_count: number;
   shared_by_username: string;
 }
+
+const LeaderboardRow = memo(({ item, index, isCurrentUser }: { 
+  item: LeaderboardEntry; 
+  index: number; 
+  isCurrentUser: boolean;
+}) => {
+  const rank = index + 1;
+  return (
+    <View style={[styles.row, isCurrentUser && styles.rowHighlighted, shadows.sm]}>
+      <View style={styles.rankContainer}>
+        {rank <= 3 ? (
+          <Text style={styles.rankEmoji}>
+            {rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
+          </Text>
+        ) : (
+          <Text style={styles.rankNumber}>{rank}</Text>
+        )}
+      </View>
+
+      <View style={styles.userInfo}>
+        <Text style={[styles.username, isCurrentUser && styles.usernameHighlighted]}>
+          @{item.username}
+          {isCurrentUser && ' (you)'}
+        </Text>
+        <Text style={styles.stats}>
+          {item.questions_this_week} answered · {item.accuracy}% accuracy
+        </Text>
+      </View>
+
+      <View style={styles.streakContainer}>
+        <Text style={styles.streakEmoji}>🔥</Text>
+        <Text style={styles.streakNumber}>{item.streak_current}</Text>
+      </View>
+    </View>
+  );
+});
 
 export default function GroupDetailScreen({ route, navigation }: any) {
   const { group } = route.params;
@@ -56,13 +91,11 @@ export default function GroupDetailScreen({ route, navigation }: any) {
     setLoading(true);
 
     try {
-      // Load leaderboard
       const { data: lb } = await supabase.rpc('get_group_leaderboard', { 
         p_group_id: group.id 
       });
       if (lb) setLeaderboard(lb);
 
-      // Load shared notes
       const { data: notes } = await supabase
         .from('group_notes')
         .select(`
@@ -78,7 +111,6 @@ export default function GroupDetailScreen({ route, navigation }: any) {
         .eq('group_id', group.id);
 
       if (notes) {
-        // Get usernames for shared notes
         const userIds = [...new Set(notes.map((n: any) => n.notes.user_id))];
         const { data: users } = await supabase
           .from('users')
@@ -95,7 +127,6 @@ export default function GroupDetailScreen({ route, navigation }: any) {
         })));
       }
 
-      // Load my notes (for sharing)
       const { data: myNotesData } = await supabase
         .from('notes')
         .select('*')
@@ -147,7 +178,7 @@ export default function GroupDetailScreen({ route, navigation }: any) {
 
   const shareGroup = async () => {
     await Share.share({
-      message: `Join my study group "${group.name}" on BrainBuzz!\n\nCode: ${group.invite_code}\n\nhttps://quizifications.com/join/${group.invite_code}`,
+      message: `Join my study group "${group.name}" on Quizifications!\n\nCode: ${group.invite_code}`,
     });
   };
 
@@ -167,7 +198,6 @@ export default function GroupDetailScreen({ route, navigation }: any) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.groupName}>{group.name}</Text>
         <Text style={styles.groupStats}>
@@ -175,21 +205,32 @@ export default function GroupDetailScreen({ route, navigation }: any) {
         </Text>
         
         <View style={styles.inviteRow}>
-          <TouchableOpacity style={styles.inviteButton} onPress={copyInviteCode}>
+          <TouchableOpacity 
+            style={[styles.inviteButton, shadows.sm]} 
+            onPress={copyInviteCode}
+            activeOpacity={0.8}
+          >
             <Text style={styles.inviteCode}>{group.invite_code}</Text>
             <Text style={styles.copyText}>Copy</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton} onPress={shareGroup}>
-            <Text style={styles.shareButtonText}>📤 Invite</Text>
+          <TouchableOpacity style={styles.shareButton} onPress={shareGroup} activeOpacity={0.9}>
+            <LinearGradient
+              colors={gradients.primary as [string, string]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.shareButtonGradient}
+            >
+              <Text style={styles.shareButtonText}>📤 Invite</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'leaderboard' && styles.tabActive]}
           onPress={() => setActiveTab('leaderboard')}
+          activeOpacity={0.8}
         >
           <Text style={[styles.tabText, activeTab === 'leaderboard' && styles.tabTextActive]}>
             🏆 Leaderboard
@@ -198,6 +239,7 @@ export default function GroupDetailScreen({ route, navigation }: any) {
         <TouchableOpacity
           style={[styles.tab, activeTab === 'notes' && styles.tabActive]}
           onPress={() => setActiveTab('notes')}
+          activeOpacity={0.8}
         >
           <Text style={[styles.tabText, activeTab === 'notes' && styles.tabTextActive]}>
             📝 Notes ({sharedNotes.length})
@@ -207,7 +249,7 @@ export default function GroupDetailScreen({ route, navigation }: any) {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.accent} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : activeTab === 'leaderboard' ? (
         <>
@@ -220,42 +262,19 @@ export default function GroupDetailScreen({ route, navigation }: any) {
             data={leaderboard}
             keyExtractor={item => item.user_id}
             contentContainerStyle={styles.list}
-            renderItem={({ item, index }) => {
-              const rank = index + 1;
-              const isCurrentUser = item.user_id === user?.id;
-
-              return (
-                <View style={[styles.row, isCurrentUser && styles.rowHighlighted]}>
-                  <View style={styles.rankContainer}>
-                    {rank <= 3 ? (
-                      <Text style={styles.rankEmoji}>
-                        {rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
-                      </Text>
-                    ) : (
-                      <Text style={styles.rankNumber}>{rank}</Text>
-                    )}
-                  </View>
-
-                  <View style={styles.userInfo}>
-                    <Text style={[styles.username, isCurrentUser && styles.usernameHighlighted]}>
-                      @{item.username}
-                      {isCurrentUser && ' (you)'}
-                    </Text>
-                    <Text style={styles.stats}>
-                      {item.questions_this_week} answered · {item.accuracy}% accuracy
-                    </Text>
-                  </View>
-
-                  <View style={styles.streakContainer}>
-                    <Text style={styles.streakEmoji}>🔥</Text>
-                    <Text style={styles.streakNumber}>{item.streak_current}</Text>
-                  </View>
-                </View>
-              );
-            }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item, index }) => (
+              <LeaderboardRow 
+                item={item} 
+                index={index} 
+                isCurrentUser={item.user_id === user?.id} 
+              />
+            )}
             ListEmptyComponent={
               <View style={styles.emptyList}>
+                <Text style={styles.emptyEmoji}>🏆</Text>
                 <Text style={styles.emptyText}>No quiz activity this week</Text>
+                <Text style={styles.emptySubtext}>Start quizzing to get on the leaderboard!</Text>
               </View>
             }
           />
@@ -265,9 +284,13 @@ export default function GroupDetailScreen({ route, navigation }: any) {
           <FlatList
             data={sharedNotes}
             keyExtractor={item => item.id}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { paddingBottom: 100 }]}
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
-              <View style={styles.noteCard}>
+              <View style={[styles.noteCard, shadows.sm]}>
+                <View style={[styles.noteIconBg, { backgroundColor: colors.accentGlow }]}>
+                  <Text style={styles.noteIcon}>📝</Text>
+                </View>
                 <View style={styles.noteInfo}>
                   <Text style={styles.noteTitle}>{item.title}</Text>
                   <Text style={styles.noteMeta}>
@@ -278,22 +301,33 @@ export default function GroupDetailScreen({ route, navigation }: any) {
             )}
             ListEmptyComponent={
               <View style={styles.emptyList}>
-                <Text style={styles.emptyEmoji}>📝</Text>
+                <View style={styles.emptyIconContainer}>
+                  <Text style={styles.emptyEmoji}>📝</Text>
+                </View>
                 <Text style={styles.emptyText}>No notes shared yet</Text>
                 <Text style={styles.emptySubtext}>Be the first to contribute!</Text>
               </View>
             }
           />
-          <TouchableOpacity 
-            style={styles.addNotesButton}
-            onPress={() => setShareModalVisible(true)}
-          >
-            <Text style={styles.addNotesButtonText}>+ Share My Notes</Text>
-          </TouchableOpacity>
+          <View style={[styles.addNotesContainer, shadows.lg]}>
+            <TouchableOpacity 
+              style={styles.addNotesButton}
+              onPress={() => setShareModalVisible(true)}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={gradients.primary as [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.addNotesGradient}
+              >
+                <Text style={styles.addNotesButtonText}>+ Share My Notes</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </>
       )}
 
-      {/* Share Notes Modal */}
       <Modal
         visible={shareModalVisible}
         animationType="slide"
@@ -310,7 +344,7 @@ export default function GroupDetailScreen({ route, navigation }: any) {
               disabled={sharing || selectedNotes.size === 0}
             >
               {sharing ? (
-                <ActivityIndicator color={colors.accent} size="small" />
+                <ActivityIndicator color={colors.primary} size="small" />
               ) : (
                 <Text style={[
                   styles.saveText,
@@ -324,7 +358,9 @@ export default function GroupDetailScreen({ route, navigation }: any) {
 
           {myNotes.length === 0 ? (
             <View style={styles.emptyModal}>
-              <Text style={styles.emptyEmoji}>📝</Text>
+              <View style={styles.emptyIconContainer}>
+                <Text style={styles.emptyEmoji}>📝</Text>
+              </View>
               <Text style={styles.emptyText}>No notes yet</Text>
               <Text style={styles.emptySubtext}>Create notes first, then share them here</Text>
               <TouchableOpacity 
@@ -333,8 +369,16 @@ export default function GroupDetailScreen({ route, navigation }: any) {
                   setShareModalVisible(false);
                   navigation.navigate('Notes');
                 }}
+                activeOpacity={0.9}
               >
-                <Text style={styles.createNotesButtonText}>Create Notes</Text>
+                <LinearGradient
+                  colors={gradients.primary as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.createNotesGradient}
+                >
+                  <Text style={styles.createNotesButtonText}>Create Notes</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           ) : (
@@ -342,6 +386,7 @@ export default function GroupDetailScreen({ route, navigation }: any) {
               data={myNotes}
               keyExtractor={item => item.id}
               contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
               renderItem={({ item }) => {
                 const isSelected = selectedNotes.has(item.id);
                 const isAlreadyShared = sharedNotes.some(n => n.id === item.id);
@@ -352,9 +397,11 @@ export default function GroupDetailScreen({ route, navigation }: any) {
                       styles.selectableNote,
                       isSelected && styles.selectableNoteSelected,
                       isAlreadyShared && styles.selectableNoteDisabled,
+                      shadows.sm,
                     ]}
                     onPress={() => !isAlreadyShared && toggleNoteSelection(item.id)}
                     disabled={isAlreadyShared}
+                    activeOpacity={0.8}
                   >
                     <View style={styles.noteInfo}>
                       <Text style={styles.noteTitle}>{item.title}</Text>
@@ -393,7 +440,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   groupName: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize.xxl,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 4,
@@ -401,11 +448,11 @@ const styles = StyleSheet.create({
   groupStats: {
     fontSize: fontSize.sm,
     color: colors.textSecondary,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   inviteRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   inviteButton: {
     flex: 1,
@@ -414,36 +461,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
   },
   inviteCode: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: '700',
     color: colors.text,
-    fontFamily: 'monospace',
+    letterSpacing: 2,
   },
   copyText: {
     fontSize: fontSize.sm,
     fontWeight: '600',
-    color: colors.accent,
+    color: colors.primary,
   },
   shareButton: {
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
+    overflow: 'hidden',
+  },
+  shareButtonGradient: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   shareButtonText: {
     fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.background,
+    fontWeight: '700',
+    color: colors.text,
   },
   tabs: {
     flexDirection: 'row',
     padding: spacing.lg,
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   tab: {
     flex: 1,
@@ -455,8 +506,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   tabActive: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   tabText: {
     fontSize: fontSize.md,
@@ -464,7 +515,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   tabTextActive: {
-    color: colors.background,
+    color: colors.text,
   },
   loadingContainer: {
     flex: 1,
@@ -477,7 +528,7 @@ const styles = StyleSheet.create({
   },
   yourRankText: {
     fontSize: fontSize.sm,
-    color: colors.accent,
+    color: colors.primary,
     fontWeight: '600',
   },
   list: {
@@ -495,18 +546,18 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   rowHighlighted: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentGlow,
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryGlow,
   },
   rankContainer: {
-    width: 40,
+    width: 44,
     alignItems: 'center',
   },
   rankEmoji: {
-    fontSize: 24,
+    fontSize: 28,
   },
   rankNumber: {
-    fontSize: fontSize.lg,
+    fontSize: fontSize.xl,
     fontWeight: '700',
     color: colors.textSecondary,
   },
@@ -520,7 +571,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   usernameHighlighted: {
-    color: colors.accent,
+    color: colors.primary,
   },
   stats: {
     fontSize: fontSize.sm,
@@ -531,30 +582,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+    backgroundColor: colors.cardElevated,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
   },
   streakEmoji: {
     fontSize: 16,
   },
   streakNumber: {
-    fontSize: fontSize.lg,
+    fontSize: fontSize.md,
     fontWeight: '700',
     color: colors.text,
   },
   emptyList: {
     alignItems: 'center',
-    paddingVertical: spacing.xxl,
+    paddingVertical: spacing.xxxl,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.cardElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
   },
   emptyEmoji: {
-    fontSize: 48,
-    marginBottom: spacing.md,
+    fontSize: 36,
   },
   emptyText: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
+    fontSize: fontSize.lg,
+    fontWeight: '600',
+    color: colors.text,
     marginBottom: spacing.xs,
   },
   emptySubtext: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.md,
     color: colors.textSecondary,
   },
   noteCard: {
@@ -564,6 +628,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  noteIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  noteIcon: {
+    fontSize: 22,
   },
   noteInfo: {
     flex: 1,
@@ -576,22 +653,31 @@ const styles = StyleSheet.create({
   noteMeta: {
     fontSize: fontSize.sm,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 2,
+  },
+  addNotesContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   addNotesButton: {
-    position: 'absolute',
-    bottom: spacing.xl,
-    left: spacing.lg,
-    right: spacing.lg,
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+  },
+  addNotesGradient: {
     padding: spacing.lg,
     alignItems: 'center',
   },
   addNotesButtonText: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
     fontWeight: '700',
-    color: colors.background,
+    color: colors.text,
   },
   modalContainer: {
     flex: 1,
@@ -617,7 +703,7 @@ const styles = StyleSheet.create({
   saveText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.accent,
+    color: colors.primary,
   },
   saveTextDisabled: {
     opacity: 0.5,
@@ -629,16 +715,18 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
   },
   createNotesButton: {
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    marginTop: spacing.xl,
+  },
+  createNotesGradient: {
     paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    marginTop: spacing.lg,
+    paddingHorizontal: spacing.xxl,
   },
   createNotesButtonText: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: colors.background,
+    color: colors.text,
   },
   selectableNote: {
     backgroundColor: colors.card,
@@ -651,27 +739,27 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   selectableNoteSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentGlow,
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryGlow,
   },
   selectableNoteDisabled: {
     opacity: 0.5,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: borderRadius.sm,
+    width: 26,
+    height: 26,
+    borderRadius: borderRadius.xs,
     borderWidth: 2,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxSelected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   checkmark: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: '700',
     fontSize: 14,
   },
