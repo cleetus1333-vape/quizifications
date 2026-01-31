@@ -24,3 +24,24 @@ venv/
 ENV/
 .cache/
 .local/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# React Native / Expo
+app/node_modules/
+app/.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Misc
+.DS_Store
+*.zip
+attached_assets/
