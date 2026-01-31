@@ -11,5 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "expo-linear-gradient": "^15.0.8"
+  },
+  "overrides": {
+    "tar": "^7.5.7"
   }
 }
