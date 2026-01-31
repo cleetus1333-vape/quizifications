@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizifications - Study Smarter, Not Harder | AI-Powered Quiz App</title>
+    <meta name="description" content="Turn your notes into push notification quizzes. AI-generated questions, study groups with leaderboards, and spaced repetition that boosts retention by 85%. Start your free trial.">
+    <meta name="keywords" content="study app, quiz app, flashcards, spaced repetition, AI study, push notification quizzes, study groups, SAT prep, exam preparation, memory retention">
+    <meta name="author" content="Quizifications">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://quizifications.com/">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://quizifications.com/">
+    <meta property="og:title" content="Quizifications - Study Smarter, Not Harder">
+    <meta property="og:description" content="Turn your notes into push notification quizzes. AI-generated questions, study groups, and spaced repetition that actually works.">
+    <meta property="og:image" content="https://quizifications.com/assets/og-image.png">
+    <meta property="og:site_name" content="Quizifications">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Quizifications - Study Smarter, Not Harder">
+    <meta name="twitter:description" content="Turn your notes into push notification quizzes. AI-powered study app with 85% better retention.">
+    <meta name="twitter:image" content="https://quizifications.com/assets/og-image.png">
+    
+    <meta name="theme-color" content="#c8ff00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="apple-touch-icon" href="assets/icon.png">
+    
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Quizifications",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "iOS, Android",
+      "offers": {
+        "@type": "Offer",
+        "price": "4.99",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2027-12-31"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1000"
+      },
+      "description": "AI-powered study app that sends push notification quizzes from your notes. Features spaced repetition and study groups.",
+      "url": "https://quizifications.com",
+      "author": {
+        "@type": "Organization",
+        "name": "Quizifications",
+        "email": "info@quizifications.com"
+      }
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0b;
+            --bg-elevated: #111113;
+            --bg-elevated-2: #161618;
+            --card: #1a1a1d;
+            --card-hover: #1f1f22;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-light: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #c8ff00;
+            --accent-glow: rgba(200, 255, 0, 0.12);
+            --accent-glow-strong: rgba(200, 255, 0, 0.25);
+            --accent-dark: #9acc00;
+            --gradient-accent: linear-gradient(135deg, #c8ff00 0%, #a8e600 100%);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+            50% { box-shadow: 0 0 40px var(--accent-glow-strong); }
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .animate-fade-up-delay-1 {
+            animation: fadeInUp 0.8s ease-out 0.1s forwards;
+            opacity: 0;
+        }
+
+        .animate-fade-up-delay-2 {
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .animate-fade-up-delay-3 {
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+
+        /* Header */
+        header {
+            padding: 16px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 11, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        header:hover {
+            background: rgba(10, 10, 11, 0.95);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            transition: opacity 0.2s ease;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        .logo img {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover img {
+            transform: rotate(-5deg) scale(1.05);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        nav a:hover {
+            color: var(--text);
+            background: var(--border);
+        }
+
+        .cta-button {
+            background: var(--gradient-accent);
+            color: var(--bg);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow-strong), 0 0 0 1px var(--accent);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        .cta-button.secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border-light);
+        }
+
+        .cta-button.secondary:hover {
+            background: var(--border);
+            border-color: var(--border-light);
+            box-shadow: none;
+        }
+
+        .cta-button.secondary::before {
+            display: none;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 180px 0 140px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1000px;
+            height: 800px;
+            background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 60%);
+            pointer-events: none;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(200, 255, 0, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(200, 255, 0, 0.1) 0%, rgba(200, 255, 0, 0.05) 100%);
+            border: 1px solid rgba(200, 255, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            color: var(--accent);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .hero-badge:hover {
+            background: linear-gradient(135deg, rgba(200, 255, 0, 0.15) 0%, rgba(200, 255, 0, 0.08) 100%);
+            border-color: rgba(200, 255, 0, 0.3);
+            transform: scale(1.02);
+        }
+
+        .hero-badge span {
+            font-size: 16px;
+        }
+
+        .hero h1 {
+            font-size: clamp(52px, 9vw, 88px);
+            font-weight: 800;
+            line-height: 1.0;
+            margin-bottom: 28px;
+            letter-spacing: -3px;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero h1 span {
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .hero h1 span::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-accent);
+            border-radius: 2px;
+            opacity: 0.3;
+        }
+
+        .hero > .container > p {
+            font-size: 19px;
+            color: var(--text-secondary);
+            max-width: 580px;
+            margin: 0 auto 48px;
+            line-height: 1.8;
+            letter-spacing: -0.2px;
+            animation: fadeInUp 0.8s ease-out 0.15s forwards;
+            opacity: 0;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.25s forwards;
+            opacity: 0;
+        }
+
+        .hero-buttons .cta-button {
+            padding: 16px 32px;
+            font-size: 15px;
+            border-radius: 12px;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 64px;
+            margin-top: 100px;
+            padding-top: 60px;
+            border-top: 1px solid var(--border);
+            position: relative;
+            animation: fadeInUp 0.8s ease-out 0.35s forwards;
+            opacity: 0;
+        }
+
+        .hero-stats::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: var(--gradient-accent);
+            border-radius: 1px;
+        }
+
+        .hero-stat {
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .hero-stat:hover {
+            transform: translateY(-4px);
+        }
+
+        .hero-stat-value {
+            font-size: 42px;
+            font-weight: 800;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .hero-stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        /* Features */
+        .features {
+            padding: 140px 0;
+            position: relative;
+        }
+
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--accent-glow);
+            border-radius: 6px;
+        }
+
+        .section-title {
+            font-size: clamp(36px, 5vw, 52px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg) 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top center, var(--accent-glow) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(200, 255, 0, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 60px var(--accent-glow);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-glow-strong) 0%, var(--accent-glow) 100%);
+            border: 1px solid rgba(200, 255, 0, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(-3deg);
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .feature-card h3 {
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 140px 0;
+            background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg) 100%);
+            position: relative;
+        }
+
+        .how-it-works::before,
+        .how-it-works::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+        }
+
+        .how-it-works::before {
+            top: 0;
+        }
+
+        .how-it-works::after {
+            bottom: 0;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin-top: 80px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 32px;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-glow), var(--accent));
+            opacity: 0.3;
+        }
+
+        .step {
+            text-align: center;
+            padding: 40px 32px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-6px);
+        }
+
+        .step-number {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-accent);
+            color: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 auto 28px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 0 40px var(--accent-glow);
+            transition: all 0.3s ease;
+        }
+
+        .step:hover .step-number {
+            transform: scale(1.1);
+            box-shadow: 0 0 60px var(--accent-glow-strong);
+        }
+
+        .step h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            letter-spacing: -0.3px;
+        }
+
+        .step p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        /* Pricing */
+        .pricing {
+            padding: 140px 0;
+            position: relative;
+        }
+
+        .pricing::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .pricing-cards {
+            display: flex;
+            justify-content: center;
+            max-width: 440px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-card {
+            background: linear-gradient(180deg, var(--bg-elevated-2) 0%, var(--bg-elevated) 100%);
+            border: 2px solid var(--accent);
+            border-radius: 28px;
+            padding: 48px 44px;
+            position: relative;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 80px var(--accent-glow), 0 25px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-glow) 0%, transparent 30%);
+            pointer-events: none;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 100px var(--accent-glow-strong), 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-accent);
+            color: var(--bg);
+            padding: 8px 24px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .pricing-card h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-card .price {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            letter-spacing: -2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-card .price span {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0;
+        }
+
+        .pricing-card .billing {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 36px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-card .billing strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 36px;
+            text-align: left;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+        }
+
+        .pricing-features li:hover {
+            color: var(--text);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 14px;
+            width: 22px;
+            height: 22px;
+            background: var(--accent-glow);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .pricing-card .cta-button {
+            width: 100%;
+            justify-content: center;
+            padding: 18px 32px;
+            font-size: 16px;
+            border-radius: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Groups */
+        .groups {
+            padding: 140px 0;
+            background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .groups::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+        }
+
+        .groups-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .groups-text h2 {
+            font-size: clamp(36px, 5vw, 48px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 24px;
+            line-height: 1.1;
+        }
+
+        .groups-text h2 span {
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .groups-text > p {
+            color: var(--text-secondary);
+            font-size: 17px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        .groups-features {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .groups-feature {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 14px 20px;
+            background: var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .groups-feature:hover {
+            background: var(--accent-glow);
+            transform: translateX(8px);
+        }
+
+        .groups-feature span {
+            font-size: 22px;
+        }
+
+        .groups-visual {
+            background: linear-gradient(180deg, var(--card) 0%, var(--bg-elevated) 100%);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 36px;
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .groups-visual::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: var(--gradient-accent);
+            border-radius: 1px;
+        }
+
+        .groups-visual:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            border-color: var(--border-light);
+        }
+
+        .leaderboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .leaderboard-header h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .leaderboard-header span {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 600;
+            padding: 4px 10px;
+            background: var(--accent-glow);
+            border-radius: 6px;
+        }
+
+        .leaderboard-preview {
+            background: var(--bg);
+            border-radius: 18px;
+            padding: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            border-radius: 14px;
+            margin-bottom: 6px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .leaderboard-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .leaderboard-row:first-child {
+            background: linear-gradient(135deg, var(--accent-glow-strong) 0%, var(--accent-glow) 100%);
+            border: 1px solid rgba(200, 255, 0, 0.3);
+        }
+
+        .leaderboard-row:hover {
+            background: var(--border);
+        }
+
+        .leaderboard-row:first-child:hover {
+            background: linear-gradient(135deg, rgba(200, 255, 0, 0.3) 0%, var(--accent-glow-strong) 100%);
+        }
+
+        .leaderboard-rank {
+            font-size: 26px;
+            width: 36px;
+            text-align: center;
+        }
+
+        .leaderboard-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .leaderboard-row:first-child .leaderboard-avatar {
+            background: var(--accent);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .leaderboard-streak {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--accent);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 160px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1000px;
+            height: 500px;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .cta-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+        }
+
+        .cta-section h2 {
+            font-size: clamp(40px, 7vw, 64px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-section p {
+            font-size: 19px;
+            color: var(--text-secondary);
+            max-width: 480px;
+            margin: 0 auto 48px;
+            position: relative;
+            z-index: 1;
+            line-height: 1.7;
+        }
+
+        .cta-section .cta-button {
+            padding: 18px 40px;
+            font-size: 16px;
+            border-radius: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-elevated);
+            border-top: 1px solid var(--border);
+            padding: 80px 0 40px;
+            position: relative;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 64px;
+            margin-bottom: 64px;
+        }
+
+        .footer-brand {
+            max-width: 280px;
+        }
+
+        .footer-brand .logo {
+            margin-bottom: 20px;
+        }
+
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .footer-column h4 {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .footer-column a {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 0;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .footer-column a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 8px;
+            width: 0;
+            height: 1px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .footer-column a:hover::before {
+            width: 20px;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .footer-bottom a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s ease;
+        }
+
+        .footer-bottom a:hover {
+            color: var(--accent);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            transition: opacity 0.2s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .steps {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+            }
+
+            .steps::before {
+                display: none;
+            }
+        }
+
+        @media (max-width: 900px) {
+            nav {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .groups-content {
+                grid-template-columns: 1fr;
+                gap: 60px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 48px;
+            }
+
+            .hero-stats {
+                flex-wrap: wrap;
+                gap: 40px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 140px 0 100px;
+            }
+
+            .hero h1 {
+                font-size: 44px;
+                letter-spacing: -2px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hero-buttons .cta-button {
+                justify-content: center;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            .pricing-card {
+                padding: 40px 28px;
+            }
+
+            .section-title {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="/" class="logo">
+                <img src="assets/icon.png" alt="Quizifications">
+                Quizifications
+            </a>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#groups">Study Groups</a>
+                <a href="contact.html" class="cta-button">Get Started</a>
+            </nav>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span>🚀</span> Now available on iOS & Android
+            </div>
+            <h1>Study Smarter,<br><span>Not Harder</span></h1>
+            <p>Get randomly quizzed throughout the day from your own notes. Join study groups with classmates and actually remember what you study.</p>
+            <div class="hero-buttons">
+                <a href="#pricing" class="cta-button">Start Free Trial →</a>
+                <a href="#how-it-works" class="cta-button secondary">See How It Works</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">3 Days</div>
+                    <div class="hero-stat-label">Free Trial</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">85%</div>
+                    <div class="hero-stat-label">Better Retention</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">1-20</div>
+                    <div class="hero-stat-label">Group Members</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">Features</div>
+                <h2 class="section-title">Everything You Need to Ace Your Studies</h2>
+                <p class="section-subtitle">Powerful features designed to help you remember more and study less</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Push Notification Quizzes</h3>
+                    <p>Get quizzed throughout the day with smart notifications. Spaced repetition ensures you review at the optimal time for retention.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>AI-Generated Questions</h3>
+                    <p>Upload your notes and our AI creates personalized quiz questions. No more making flashcards by hand.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Study Groups</h3>
+                    <p>Create or join study groups with up to 20 members. Share notes and compete on weekly leaderboards.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Progress Tracking</h3>
+                    <p>Track your streak, accuracy, and improvement over time. See exactly what you need to review.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Pre-Built Categories</h3>
+                    <p>Access our library of SAT prep, science, history, languages, and more. Start quizzing immediately.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Quick 10-Second Quizzes</h3>
+                    <p>Each quiz takes just seconds to complete. Study while waiting in line, between classes, or during breaks.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">How It Works</div>
+                <h2 class="section-title">Get Started in Minutes</h2>
+                <p class="section-subtitle">Three simple steps to better studying</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Add Your Notes</h3>
+                    <p>Upload your study materials or choose from our pre-built categories. Our AI generates quiz questions automatically.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Set Your Schedule</h3>
+                    <p>Choose when you want to be quizzed. Set study windows around your classes, work, or whenever works best.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Get Quizzed & Learn</h3>
+                    <p>Receive push notifications with quick quizzes. Answer in seconds and watch your knowledge grow.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">Pricing</div>
+                <h2 class="section-title">Start With a Free Trial</h2>
+                <p class="section-subtitle">Try everything free for 3 days. Cancel anytime.</p>
+            </div>
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <div class="pricing-badge">Most Popular</div>
+                    <h3>Premium</h3>
+                    <div class="price">$4.99<span>/month</span></div>
+                    <div class="billing">or $39.99/year (<strong>save 33%</strong>)</div>
+                    <ul class="pricing-features">
+                        <li>Unlimited notes & AI questions</li>
+                        <li>Study groups (up to 20 members)</li>
+                        <li>Push notification quizzes</li>
+                        <li>Progress tracking & analytics</li>
+                        <li>All pre-built categories</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <a href="contact.html" class="cta-button">Start 3-Day Free Trial</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="groups" id="groups">
+        <div class="container groups-content">
+            <div class="groups-text">
+                <div class="section-label">Study Groups</div>
+                <h2>Learn Together,<br><span>Compete Together</span></h2>
+                <p>Create or join study groups with classmates. Share notes, quiz each other, and compete on weekly leaderboards. Studying is better with friends.</p>
+                <div class="groups-features">
+                    <div class="groups-feature">
+                        <span>👥</span> Up to 20 members per group
+                    </div>
+                    <div class="groups-feature">
+                        <span>📝</span> Share notes with your group
+                    </div>
+                    <div class="groups-feature">
+                        <span>🏆</span> Weekly leaderboards
+                    </div>
+                    <div class="groups-feature">
+                        <span>🔗</span> Easy invite codes
+                    </div>
+                </div>
+            </div>
+            <div class="groups-visual">
+                <div class="leaderboard-header">
+                    <h4>Weekly Leaderboard</h4>
+                    <span>Bio 101 Study Group</span>
+                </div>
+                <div class="leaderboard-preview">
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-rank">🥇</span>
+                        <div class="leaderboard-avatar">S</div>
+                        <span class="leaderboard-name">@sarah_studies</span>
+                        <span class="leaderboard-streak">🔥 12</span>
+                    </div>
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-rank">🥈</span>
+                        <div class="leaderboard-avatar">M</div>
+                        <span class="leaderboard-name">@mike_learns</span>
+                        <span class="leaderboard-streak">🔥 8</span>
+                    </div>
+                    <div class="leaderboard-row">
+                        <span class="leaderboard-rank">🥉</span>
+                        <div class="leaderboard-avatar">Q</div>
+                        <span class="leaderboard-name">@study_queen</span>
+                        <span class="leaderboard-streak">🔥 7</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Study Smarter?</h2>
+            <p>Join thousands of students who are remembering more and studying less.</p>
+            <a href="#pricing" class="cta-button">Start Your Free Trial →</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="/" class="logo">
+                        <img src="assets/icon.png" alt="Quizifications">
+                        Quizifications
+                    </a>
+                    <p>The smart way to study. Get quizzed from your notes and actually remember what you learn.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#groups">Study Groups</a>
+                    <a href="#how-it-works">How It Works</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="mailto:help@quizifications.com">Support</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Quizifications. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy</a>
+                    <a href="terms.html">Terms</a>
+                    <a href="mailto:info@quizifications.com">info@quizifications.com</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
