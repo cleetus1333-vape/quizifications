@@ -12,6 +12,14 @@ Quizifications is a React Native/Expo mobile app that sends push notification qu
 
 ## Project Structure
 ```
+public/                        # Static website (deployed)
+├── index.html                 # Landing page
+├── privacy.html               # Privacy policy (App Store compliant)
+├── terms.html                 # Terms of service
+├── about.html                 # About page
+├── contact.html               # Contact page
+└── assets/                    # Website assets (logo, icons)
+
 app/                           # React Native/Expo mobile app
 ├── App.tsx                    # Main entry with navigation and lazy loading
 ├── src/
@@ -35,22 +43,17 @@ app/                           # React Native/Expo mobile app
 │   │   ├── GroupDetailScreen.tsx # Group details and leaderboard
 │   │   └── CategoriesScreen.tsx  # Topic selection
 │   └── types/                 # TypeScript type definitions
-├── assets/                    # App icons and splash screens (lime green Q logo)
+├── assets/                    # App icons and splash screens
 └── package.json
 
-index.html                     # Landing page for web
-privacy.html                   # Privacy policy (App Store compliant)
-terms.html                     # Terms of service
-about.html                     # About page
-contact.html                   # Contact page with support@quizifications.com
-assets/                        # Landing page assets including logo
 app-store/                     # App Store & Google Play submission metadata
 ├── ios-app-store-metadata.json
 ├── google-play-metadata.json
 ├── app-store-description.txt
 └── README.md
-supabase-schema.sql           # Database schema
-supabase-groups-schema.sql    # Study groups schema
+
+supabase-schema.sql            # Database schema for mobile app
+supabase-groups-schema.sql     # Study groups schema
 ```
 
 ## Pricing Model
@@ -72,7 +75,7 @@ cd app && npx expo start
 
 ## Running the Landing Page
 ```bash
-python -m http.server 5000 --bind 0.0.0.0
+python -m http.server 5000 --bind 0.0.0.0 --directory public
 ```
 
 ## Tech Stack
@@ -82,7 +85,8 @@ python -m http.server 5000 --bind 0.0.0.0
 - **Notifications**: Expo Notifications
 
 ## Recent Changes
+- 2026-01-31: Cleaned up project structure, moved website to public/ folder
+- 2026-01-31: Fixed security vulnerabilities (tar package) with npm overrides
 - 2026-01-31: Rebranded entire app to lime green (#c8ff00) on black theme
 - 2026-01-31: Created complete website: landing page, privacy, terms, about, contact
 - 2026-01-31: Added App Store compliance: account deletion, cancellation instructions
-- 2026-01-31: Updated all contact info to support@quizifications.com
