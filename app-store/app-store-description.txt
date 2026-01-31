@@ -42,7 +42,7 @@ PRICING
 • 3-day free trial with full access
 • $4.99/month or $39.99/year (save 33%)
 
-Questions? Contact us at Matt@quizifications.com
+Questions? Contact us at support@quizifications.com
 
 ================================================================================
 KEYWORDS (iOS, 100 chars max, comma separated)
@@ -72,7 +72,7 @@ Privacy Policy: https://quizifications.com/privacy.html
 Terms of Service: https://quizifications.com/terms.html
 Support: https://quizifications.com/contact.html
 Website: https://quizifications.com
-Email: Matt@quizifications.com
+Email: support@quizifications.com
 
 ================================================================================
 CATEGORY & RATING

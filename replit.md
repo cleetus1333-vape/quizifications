@@ -7,7 +7,7 @@ Quizifications is a React Native/Expo mobile app that sends push notification qu
 - **Primary Color**: Lime green (#c8ff00)
 - **Background**: Black (#0a0a0b) with elevated cards (#141416, #1a1a1e)
 - **Logo**: Bold "Q" in lime green
-- **Contact**: Matt@quizifications.com
+- **Contact**: support@quizifications.com
 - **Website**: quizifications.com
 
 ## Project Structure
@@ -42,7 +42,7 @@ index.html                     # Landing page for web
 privacy.html                   # Privacy policy (App Store compliant)
 terms.html                     # Terms of service
 about.html                     # About page
-contact.html                   # Contact page with Matt@quizifications.com
+contact.html                   # Contact page with support@quizifications.com
 assets/                        # Landing page assets including logo
 app-store/                     # App Store & Google Play submission metadata
 ├── ios-app-store-metadata.json
@@ -85,4 +85,4 @@ python -m http.server 5000 --bind 0.0.0.0
 - 2026-01-31: Rebranded entire app to lime green (#c8ff00) on black theme
 - 2026-01-31: Created complete website: landing page, privacy, terms, about, contact
 - 2026-01-31: Added App Store compliance: account deletion, cancellation instructions
-- 2026-01-31: Updated all contact info to Matt@quizifications.com
+- 2026-01-31: Updated all contact info to support@quizifications.com
