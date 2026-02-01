@@ -79,12 +79,20 @@ python -m http.server 5000 --bind 0.0.0.0 --directory public
 ```
 
 ## Tech Stack
-- **Mobile**: React Native, Expo, TypeScript
+- **Mobile**: React Native, Expo SDK 54, TypeScript
 - **Backend**: Supabase (Auth, Database, Edge Functions)
 - **AI**: Claude API for quiz generation
 - **Notifications**: Expo Notifications
 
+## Supabase Configuration
+- **URL**: Set via EXPO_PUBLIC_SUPABASE_URL secret
+- **Key**: Set via EXPO_PUBLIC_SUPABASE_ANON_KEY secret
+- **Schema**: Run supabase-schema.sql and supabase-groups-schema.sql in SQL Editor
+
 ## Recent Changes
+- 2026-02-01: Upgraded to Expo SDK 54 (React 19, React Native 0.81.5)
+- 2026-02-01: Added Supabase connection test banner on HomeScreen
+- 2026-02-01: Configured Supabase credentials
 - 2026-01-31: Cleaned up project structure, moved website to public/ folder
 - 2026-01-31: Fixed security vulnerabilities (tar package) with npm overrides
 - 2026-01-31: Rebranded entire app to lime green (#c8ff00) on black theme
