@@ -81,9 +81,9 @@ function MainTabs() {
           tabBarLabel: 'Home',
         }}
       >
-        {() => (
+        {(props) => (
           <Suspense fallback={<LoadingFallback />}>
-            <HomeScreen />
+            <HomeScreen {...props} />
           </Suspense>
         )}
       </Tab.Screen>
@@ -94,9 +94,9 @@ function MainTabs() {
           tabBarLabel: 'Settings',
         }}
       >
-        {() => (
+        {(props) => (
           <Suspense fallback={<LoadingFallback />}>
-            <SettingsScreen />
+            <SettingsScreen {...props} />
           </Suspense>
         )}
       </Tab.Screen>
@@ -182,9 +182,9 @@ function AppNavigator() {
             name="Categories" 
             options={{ title: 'Study Topics' }}
           >
-            {() => (
+            {(props) => (
               <Suspense fallback={<LoadingFallback />}>
-                <CategoriesScreen />
+                <CategoriesScreen {...props} />
               </Suspense>
             )}
           </Stack.Screen>
@@ -192,9 +192,9 @@ function AppNavigator() {
             name="Notes" 
             options={{ title: 'My Notes' }}
           >
-            {() => (
+            {(props) => (
               <Suspense fallback={<LoadingFallback />}>
-                <NotesScreen />
+                <NotesScreen {...props} />
               </Suspense>
             )}
           </Stack.Screen>
