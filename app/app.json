@@ -22,8 +22,6 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "fetch",
-          "remote-notification",
-          "fetch",
           "remote-notification"
         ],
         "NSUserTrackingUsageDescription": "This app does not track you across other apps or websites."
@@ -43,10 +41,6 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "SCHEDULE_EXACT_ALARM",
-        "POST_NOTIFICATIONS",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "SCHEDULE_EXACT_ALARM",
         "POST_NOTIFICATIONS"
       ]
     },
@@ -57,7 +51,8 @@
           "icon": "./assets/notification-icon.png",
           "color": "#c8ff00"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "extra": {
       "privacyPolicyUrl": "https://quizifications.app/privacy",
