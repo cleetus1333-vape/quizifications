@@ -12,17 +12,35 @@ import { useAuth } from '../contexts/AuthContext';
 import { useQuiz } from '../hooks/useQuiz';
 import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 import { config, trialCopy } from '../lib/config';
+import { testConnection, ConnectionTestResult } from '../lib/supabase';
 
 export default function HomeScreen({ navigation }: any) {
   const { user, refreshUser } = useAuth();
   const { getTodayStats } = useQuiz();
   const [stats, setStats] = useState({ answered: 0, correct: 0, dodged: 0 });
   const [refreshing, setRefreshing] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionTestResult | null>(null);
+  const [showConnectionBanner, setShowConnectionBanner] = useState(true);
 
   const loadStats = useCallback(async () => {
     const todayStats = await getTodayStats();
     setStats(todayStats);
   }, [getTodayStats]);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const checkConnection = async () => {
+      const result = await testConnection();
+      setConnectionStatus(result);
+      if (result.success) {
+        timeoutId = setTimeout(() => setShowConnectionBanner(false), 5000);
+      }
+    };
+    checkConnection();
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
 
   useEffect(() => {
     loadStats();
@@ -51,6 +69,30 @@ export default function HomeScreen({ navigation }: any) {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
       }
     >
+      {showConnectionBanner && connectionStatus && (
+        <TouchableOpacity 
+          style={[
+            styles.connectionBanner,
+            connectionStatus.success ? styles.connectionSuccess : styles.connectionError
+          ]}
+          onPress={() => setShowConnectionBanner(false)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.connectionIcon}>
+            {connectionStatus.success ? '✓' : '✗'}
+          </Text>
+          <View style={styles.connectionText}>
+            <Text style={styles.connectionMessage}>{connectionStatus.message}</Text>
+            {connectionStatus.success && (
+              <Text style={styles.connectionDetails}>
+                {connectionStatus.categoryCount} categories, {connectionStatus.questionCount} questions
+              </Text>
+            )}
+          </View>
+          <Text style={styles.connectionClose}>×</Text>
+        </TouchableOpacity>
+      )}
+
       <View style={styles.streakCard}>
         <LinearGradient
           colors={gradients.primary as [string, string]}
@@ -347,5 +389,46 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.textMuted,
     fontSize: fontSize.sm,
+  },
+  connectionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
+  },
+  connectionSuccess: {
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    borderWidth: 1,
+    borderColor: colors.success,
+  },
+  connectionError: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  connectionIcon: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginRight: spacing.md,
+    color: colors.text,
+  },
+  connectionText: {
+    flex: 1,
+  },
+  connectionMessage: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  connectionDetails: {
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  connectionClose: {
+    fontSize: 24,
+    color: colors.textMuted,
+    marginLeft: spacing.sm,
   },
 });
