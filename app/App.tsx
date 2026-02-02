@@ -51,6 +51,7 @@ const TabIcon = React.memo(({ emoji, focused }: { emoji: string; focused: boolea
 function MainTabs() {
   return (
     <Tab.Navigator
+      id="MainTabs"
       screenOptions={{
         tabBarStyle: {
           backgroundColor: colors.card,
@@ -94,9 +95,9 @@ function MainTabs() {
           tabBarLabel: 'Settings',
         }}
       >
-        {(props) => (
+        {() => (
           <Suspense fallback={<LoadingFallback />}>
-            <SettingsScreen {...props} />
+            <SettingsScreen />
           </Suspense>
         )}
       </Tab.Screen>
@@ -110,9 +111,9 @@ function AppNavigator() {
 
   useEffect(() => {
     if (user) {
-      registerForPushNotifications(user.id);
+      registerForPushNotifications(user.id).catch(console.warn);
       const interval = settings?.quiz_interval_minutes || 30;
-      scheduleNextQuiz(getRandomQuestion, interval);
+      scheduleNextQuiz(getRandomQuestion, interval).catch(console.warn);
     }
   }, [user, settings, getRandomQuestion]);
 
@@ -136,6 +137,7 @@ function AppNavigator() {
 
   return (
     <Stack.Navigator
+      id="RootStack"
       screenOptions={{
         headerStyle: {
           backgroundColor: colors.background,
@@ -182,9 +184,9 @@ function AppNavigator() {
             name="Categories" 
             options={{ title: 'Study Topics' }}
           >
-            {(props) => (
+            {() => (
               <Suspense fallback={<LoadingFallback />}>
-                <CategoriesScreen {...props} />
+                <CategoriesScreen />
               </Suspense>
             )}
           </Stack.Screen>

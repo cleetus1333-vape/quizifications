@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return { error: new Error('No user logged in') };
 
     try {
-      await supabase.from('quiz_responses').delete().eq('user_id', user.id);
+      await supabase.from('quiz_attempts').delete().eq('user_id', user.id);
       await supabase.from('group_leaderboard').delete().eq('user_id', user.id);
       await supabase.from('note_questions').delete().eq('user_id', user.id);
       await supabase.from('notes').delete().eq('user_id', user.id);

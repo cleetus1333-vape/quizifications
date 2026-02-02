@@ -95,7 +95,11 @@ export default function NotesScreen({ navigation }: any) {
   };
 
   const generateQuestions = async (noteId: string, content: string) => {
-    if (!user || !CLAUDE_API_KEY) return;
+    if (!user) return;
+    if (!CLAUDE_API_KEY) {
+      Alert.alert('Configuration Error', 'AI question generation is not configured.');
+      return;
+    }
 
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -204,8 +208,13 @@ ${content}`,
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await supabase.from('notes').delete().eq('id', note.id);
-            loadNotes();
+            try {
+              await supabase.from('notes').delete().eq('id', note.id);
+              loadNotes();
+            } catch (error) {
+              console.error('Error deleting note:', error);
+              Alert.alert('Error', 'Failed to delete note');
+            }
           },
         },
       ]

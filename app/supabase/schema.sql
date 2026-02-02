@@ -95,13 +95,13 @@ CREATE TABLE IF NOT EXISTS note_questions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Quiz responses (tracks user answers)
-CREATE TABLE IF NOT EXISTS quiz_responses (
+-- Quiz attempts (tracks user answers)
+CREATE TABLE IF NOT EXISTS quiz_attempts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  question_type TEXT NOT NULL CHECK (question_type IN ('category', 'note', 'group')),
+  question_source TEXT NOT NULL CHECK (question_source IN ('category', 'note', 'group')),
   question_id UUID NOT NULL,
-  is_correct BOOLEAN NOT NULL,
+  was_correct BOOLEAN NOT NULL,
   was_dodged BOOLEAN DEFAULT FALSE,
   answered_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -150,11 +150,23 @@ CREATE TABLE IF NOT EXISTS group_leaderboard (
   UNIQUE(group_id, user_id, week_start)
 );
 
+-- Weekly stats (for leaderboards)
+CREATE TABLE IF NOT EXISTS weekly_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  week_start DATE NOT NULL,
+  questions_answered INTEGER DEFAULT 0,
+  correct_answers INTEGER DEFAULT 0,
+  streak_days INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, week_start)
+);
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
 CREATE INDEX IF NOT EXISTS idx_note_questions_note_id ON note_questions(note_id);
-CREATE INDEX IF NOT EXISTS idx_quiz_responses_user_id ON quiz_responses(user_id);
-CREATE INDEX IF NOT EXISTS idx_quiz_responses_answered_at ON quiz_responses(answered_at);
+CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user_id ON quiz_attempts(user_id);
+CREATE INDEX IF NOT EXISTS idx_quiz_attempts_answered_at ON quiz_attempts(answered_at);
 CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON group_members(group_id);
 CREATE INDEX IF NOT EXISTS idx_group_members_user_id ON group_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_groups_invite_code ON groups(invite_code);
@@ -216,11 +228,12 @@ ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE study_windows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE note_questions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE quiz_responses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quiz_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_leaderboard ENABLE ROW LEVEL SECURITY;
+ALTER TABLE weekly_stats ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
 CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
@@ -231,7 +244,9 @@ CREATE POLICY "Users can manage own settings" ON user_settings FOR ALL USING (au
 CREATE POLICY "Users can manage own study windows" ON study_windows FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage own notes" ON notes FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage own note questions" ON note_questions FOR ALL USING (auth.uid() = user_id);
-CREATE POLICY "Users can manage own quiz responses" ON quiz_responses FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own quiz attempts" ON quiz_attempts FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own weekly stats" ON weekly_stats FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can view all stats for leaderboard" ON weekly_stats FOR SELECT USING (true);
 
 -- Group policies
 CREATE POLICY "Users can view groups they belong to" ON groups FOR SELECT 

@@ -172,14 +172,22 @@ export default function GroupDetailScreen({ route, navigation }: any) {
   };
 
   const copyInviteCode = async () => {
-    await Clipboard.setStringAsync(group.invite_code);
-    Alert.alert('Copied!', 'Invite code copied to clipboard');
+    try {
+      await Clipboard.setStringAsync(group.invite_code);
+      Alert.alert('Copied!', 'Invite code copied to clipboard');
+    } catch (error) {
+      console.warn('Failed to copy invite code:', error);
+    }
   };
 
   const shareGroup = async () => {
-    await Share.share({
-      message: `Join my study group "${group.name}" on Quizifications!\n\nCode: ${group.invite_code}`,
-    });
+    try {
+      await Share.share({
+        message: `Join my study group "${group.name}" on Quizifications!\n\nCode: ${group.invite_code}`,
+      });
+    } catch (error) {
+      console.warn('Failed to share group:', error);
+    }
   };
 
   const toggleNoteSelection = (noteId: string) => {
