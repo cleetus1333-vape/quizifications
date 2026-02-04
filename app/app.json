@@ -17,7 +17,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.quizificationsapp.quizifications",
       "buildNumber": "1",
       "infoPlist": {
@@ -25,6 +25,8 @@
           "fetch",
           "remote-notification"
         ],
+        "NSCameraUsageDescription": "Quizifications uses your camera to scan handwritten or printed notes for quiz generation.",
+        "NSPhotoLibraryUsageDescription": "Quizifications uses your photo library to import images of your notes for quiz generation.",
         "NSUserTrackingUsageDescription": "This app does not track you across other apps or websites."
       },
       "config": {
@@ -51,6 +53,18 @@
         {
           "icon": "./assets/notification-icon.png",
           "color": "#c8ff00"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Quizifications uses your camera to scan handwritten or printed notes for quiz generation."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Quizifications uses your photo library to import images of your notes for quiz generation."
         }
       ],
       "expo-asset"
