@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   settings: UserSettings | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, username?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, username: string) => {
+  const signUp = async (email: string, password: string, username?: string) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .insert({
             id: data.user.id,
             email,
-            username,
+            username: username || email.split('@')[0],
           });
 
         if (profileError) throw profileError;
@@ -110,13 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (settingsError) throw settingsError;
 
-        const defaultWindows = [
-          { user_id: data.user.id, label: 'Morning', start_time: '09:00', end_time: '12:00', is_enabled: false },
-          { user_id: data.user.id, label: 'Afternoon', start_time: '13:00', end_time: '17:00', is_enabled: true },
-          { user_id: data.user.id, label: 'Evening', start_time: '18:00', end_time: '21:00', is_enabled: true },
-        ];
-
-        await supabase.from('study_windows').insert(defaultWindows);
       }
 
       return { error: null };
@@ -150,13 +143,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       await supabase.from('quiz_attempts').delete().eq('user_id', user.id);
-      await supabase.from('group_leaderboard').delete().eq('user_id', user.id);
       await supabase.from('note_questions').delete().eq('user_id', user.id);
       await supabase.from('notes').delete().eq('user_id', user.id);
-      await supabase.from('user_categories').delete().eq('user_id', user.id);
-      await supabase.from('study_windows').delete().eq('user_id', user.id);
       await supabase.from('user_settings').delete().eq('user_id', user.id);
-      await supabase.from('group_members').delete().eq('user_id', user.id);
       await supabase.from('users').delete().eq('id', user.id);
 
       await signOut();

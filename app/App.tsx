@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { 
   registerForPushNotifications, 
   setupNotificationListeners,
+  setupNotificationCategories,
   scheduleNextQuiz 
 } from './src/lib/notifications';
 import { useQuiz } from './src/hooks/useQuiz';
@@ -17,14 +18,25 @@ import { colors } from './src/constants/theme';
 const AuthScreen = lazy(() => import('./src/screens/AuthScreen'));
 const HomeScreen = lazy(() => import('./src/screens/HomeScreen'));
 const QuizScreen = lazy(() => import('./src/screens/QuizScreen'));
-const CategoriesScreen = lazy(() => import('./src/screens/CategoriesScreen'));
 const NotesScreen = lazy(() => import('./src/screens/NotesScreen'));
+const AddNoteScreen = lazy(() => import('./src/screens/AddNoteScreen'));
 const SettingsScreen = lazy(() => import('./src/screens/SettingsScreen'));
-const GroupsScreen = lazy(() => import('./src/screens/GroupsScreen'));
-const GroupDetailScreen = lazy(() => import('./src/screens/GroupDetailScreen'));
 
-const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+export type RootStackParamList = {
+  Auth: undefined;
+  MainTabs: undefined;
+  Quiz: { questionId?: string } | undefined;
+  AddNote: undefined;
+};
+
+export type MainTabsParamList = {
+  Home: undefined;
+  Notes: undefined;
+  Settings: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 function LoadingFallback() {
   return (
@@ -89,6 +101,20 @@ function MainTabs() {
         )}
       </Tab.Screen>
       <Tab.Screen 
+        name="Notes" 
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon emoji="📝" focused={focused} />,
+          headerTitle: 'My Notes',
+          tabBarLabel: 'Notes',
+        }}
+      >
+        {(props) => (
+          <Suspense fallback={<LoadingFallback />}>
+            <NotesScreen {...props} />
+          </Suspense>
+        )}
+      </Tab.Screen>
+      <Tab.Screen 
         name="Settings" 
         options={{
           tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
@@ -110,9 +136,13 @@ function AppNavigator() {
   const { getRandomQuestion } = useQuiz();
 
   useEffect(() => {
+    setupNotificationCategories();
+  }, []);
+
+  useEffect(() => {
     if (user) {
       registerForPushNotifications(user.id).catch(console.warn);
-      const interval = settings?.quiz_interval_minutes || 30;
+      const interval = settings?.quiz_interval_minutes || 60;
       scheduleNextQuiz(getRandomQuestion, interval).catch(console.warn);
     }
   }, [user, settings, getRandomQuestion]);
@@ -124,7 +154,8 @@ function AppNavigator() {
       },
       (response) => {
         const data = response.notification.request.content.data;
-        console.log('Notification tapped:', data);
+        const actionId = response.actionIdentifier;
+        console.log('Notification action:', actionId, data);
       }
     );
 
@@ -181,42 +212,15 @@ function AppNavigator() {
             )}
           </Stack.Screen>
           <Stack.Screen 
-            name="Categories" 
-            options={{ title: 'Study Topics' }}
-          >
-            {() => (
-              <Suspense fallback={<LoadingFallback />}>
-                <CategoriesScreen />
-              </Suspense>
-            )}
-          </Stack.Screen>
-          <Stack.Screen 
-            name="Notes" 
-            options={{ title: 'My Notes' }}
+            name="AddNote" 
+            options={{ 
+              title: 'Add Note',
+              presentation: 'modal',
+            }}
           >
             {(props) => (
               <Suspense fallback={<LoadingFallback />}>
-                <NotesScreen {...props} />
-              </Suspense>
-            )}
-          </Stack.Screen>
-          <Stack.Screen 
-            name="Groups" 
-            options={{ title: 'Study Groups' }}
-          >
-            {(props) => (
-              <Suspense fallback={<LoadingFallback />}>
-                <GroupsScreen {...props} />
-              </Suspense>
-            )}
-          </Stack.Screen>
-          <Stack.Screen 
-            name="GroupDetail" 
-            options={{ title: 'Group' }}
-          >
-            {(props) => (
-              <Suspense fallback={<LoadingFallback />}>
-                <GroupDetailScreen {...props} />
+                <AddNoteScreen {...props} />
               </Suspense>
             )}
           </Stack.Screen>

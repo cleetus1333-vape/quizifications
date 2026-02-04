@@ -8,10 +8,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
-import { config } from '../lib/config';
+import { config, trialCopy } from '../lib/config';
 import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 
 export default function AuthScreen() {
@@ -19,7 +20,6 @@ export default function AuthScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,12 +29,7 @@ export default function AuthScreen() {
 
     try {
       if (isSignUp) {
-        if (!username.trim()) {
-          setError('Username is required');
-          setLoading(false);
-          return;
-        }
-        const { error } = await signUp(email, password, username.toLowerCase().trim());
+        const { error } = await signUp(email, password);
         if (error) throw error;
       } else {
         const { error } = await signIn(email, password);
@@ -47,10 +42,13 @@ export default function AuthScreen() {
     }
   };
 
+  const openTerms = () => Linking.openURL(config.termsOfServiceUrl);
+  const openPrivacy = () => Linking.openURL(config.privacyPolicyUrl);
+
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={[colors.backgroundGradientStart, colors.backgroundGradientEnd]}
+        colors={[colors.background, '#12121a']}
         style={styles.gradient}
       >
         <KeyboardAvoidingView 
@@ -59,10 +57,10 @@ export default function AuthScreen() {
         >
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Text style={styles.logoIcon}>🧠</Text>
+              <Text style={styles.logoQ}>Q</Text>
             </View>
             <Text style={styles.logoText}>Quizifications</Text>
-            <Text style={styles.tagline}>Master any subject with smart quizzes</Text>
+            <Text style={styles.tagline}>Master anything with smart quizzes</Text>
           </View>
 
           <View style={[styles.card, shadows.lg]}>
@@ -88,21 +86,6 @@ export default function AuthScreen() {
             </View>
 
             <View style={styles.form}>
-              {isSignUp && (
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Username</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="yourname"
-                    placeholderTextColor={colors.textMuted}
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                </View>
-              )}
-
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
@@ -151,7 +134,7 @@ export default function AuthScreen() {
                     <ActivityIndicator color={colors.text} />
                   ) : (
                     <Text style={styles.submitButtonText}>
-                      {isSignUp ? 'Create Account' : 'Sign In'}
+                      {isSignUp ? 'Start Free Trial' : 'Sign In'}
                     </Text>
                   )}
                 </LinearGradient>
@@ -160,16 +143,25 @@ export default function AuthScreen() {
 
             {isSignUp && (
               <View style={styles.trialBanner}>
-                <Text style={styles.trialText}>
-                  ✨ Start with a {config.trialDays}-day free trial
-                </Text>
+                <Text style={styles.trialBadge}>✨ {config.trialDays}-DAY FREE TRIAL</Text>
+                <Text style={styles.trialPrice}>Then just {config.premiumPrice}</Text>
+                <View style={styles.features}>
+                  {trialCopy.features.map((feature, i) => (
+                    <Text key={i} style={styles.feature}>• {feature}</Text>
+                  ))}
+                </View>
               </View>
             )}
           </View>
 
-          <Text style={styles.footer}>
-            By continuing, you agree to our Terms & Privacy Policy
-          </Text>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              By continuing, you agree to our{' '}
+              <Text style={styles.link} onPress={openTerms}>Terms</Text>
+              {' & '}
+              <Text style={styles.link} onPress={openPrivacy}>Privacy Policy</Text>
+            </Text>
+          </View>
         </KeyboardAvoidingView>
       </LinearGradient>
     </View>
@@ -196,14 +188,16 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: borderRadius.xl,
-    backgroundColor: colors.primaryGlow,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
-    ...shadows.md,
+    ...shadows.lg,
   },
-  logoIcon: {
-    fontSize: 40,
+  logoQ: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: colors.text,
   },
   logoText: {
     fontSize: fontSize.xxxl,
@@ -293,18 +287,45 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   trialBanner: {
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
     alignItems: 'center',
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  trialText: {
+  trialBadge: {
     fontSize: fontSize.sm,
+    fontWeight: '700',
     color: colors.primary,
-    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginBottom: spacing.xs,
+  },
+  trialPrice: {
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  features: {
+    alignSelf: 'flex-start',
+    width: '100%',
+  },
+  feature: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginBottom: spacing.xs,
   },
   footer: {
+    marginTop: spacing.xl,
+    alignItems: 'center',
+  },
+  footerText: {
     textAlign: 'center',
     color: colors.textMuted,
     fontSize: fontSize.xs,
-    marginTop: spacing.xl,
+    lineHeight: 18,
+  },
+  link: {
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
 });

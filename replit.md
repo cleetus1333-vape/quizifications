@@ -1,7 +1,7 @@
 # Quizifications
 
 ## Overview
-Quizifications is a React Native/Expo mobile app that sends push notification quizzes from user notes. The app features a 3-day free trial followed by premium subscription ($4.99/month or $39.99/year) for unlimited notes, AI-generated quizzes, and study groups (1-20 members). Trial-based model only—no free tier or ads on mobile.
+Quizifications is a React Native/Expo iOS mobile app that sends push notification quizzes from user notes. Users type/paste or scan notes, AI generates quiz questions, and users get quizzed via interactive push notifications. Features a 3-day free trial followed by $1.99/month subscription.
 
 ## Brand Identity
 - **Primary Color**: Lime green (#c8ff00)
@@ -21,7 +21,7 @@ public/                        # Static website (deployed)
 └── assets/                    # Website assets (logo, icons)
 
 app/                           # React Native/Expo mobile app
-├── App.tsx                    # Main entry with navigation and lazy loading
+├── App.tsx                    # Main entry with navigation (5 screens)
 ├── src/
 │   ├── constants/
 │   │   └── theme.ts           # Design system: colors, gradients, spacing, typography
@@ -30,42 +30,40 @@ app/                           # React Native/Expo mobile app
 │   ├── hooks/
 │   │   └── useQuiz.ts         # Quiz functionality hook
 │   ├── lib/
-│   │   ├── config.ts          # App config: trial days, pricing, feature flags, URLs
+│   │   ├── config.ts          # App config: trial days, $1.99 pricing, URLs
 │   │   ├── supabase.ts        # Supabase client
-│   │   └── notifications.ts   # Push notification handling
+│   │   └── notifications.ts   # Push notification handling with interactive categories
 │   ├── screens/
-│   │   ├── HomeScreen.tsx     # Main dashboard with stats
-│   │   ├── SettingsScreen.tsx # User settings, subscription, account deletion
-│   │   ├── AuthScreen.tsx     # Sign in/sign up
+│   │   ├── HomeScreen.tsx     # Main dashboard with stats and quick actions
+│   │   ├── NotesScreen.tsx    # Notes list with delete functionality
+│   │   ├── AddNoteScreen.tsx  # Add notes: type/paste, camera scan, or gallery
 │   │   ├── QuizScreen.tsx     # Quiz taking interface
-│   │   ├── NotesScreen.tsx    # Notes management (premium)
-│   │   ├── GroupsScreen.tsx   # Study groups (premium)
-│   │   ├── GroupDetailScreen.tsx # Group details and leaderboard
-│   │   └── CategoriesScreen.tsx  # Topic selection
+│   │   ├── SettingsScreen.tsx # Settings, subscription, Restore Purchases, account deletion
+│   │   └── AuthScreen.tsx     # Sign in/sign up with trial messaging
 │   └── types/                 # TypeScript type definitions
 ├── assets/                    # App icons and splash screens
 └── package.json
 
-app-store/                     # App Store & Google Play submission metadata
-├── ios-app-store-metadata.json
-├── google-play-metadata.json
-├── app-store-description.txt
-└── README.md
-
-supabase-schema.sql            # Database schema for mobile app
-supabase-groups-schema.sql     # Study groups schema
+supabase-schema-simplified.sql # Simplified database schema (users, notes, questions, attempts, settings)
 ```
 
 ## Pricing Model
 - **3-Day Free Trial**: Full access to all features
-- **Monthly**: $4.99/month
-- **Yearly**: $39.99/year (save 33%)
-- **Premium Features**: Unlimited notes with AI questions, Study Groups (1-20 members), priority support
+- **Monthly**: $1.99/month
+- **Premium Features**: Unlimited notes, scan handwritten notes, AI-generated quiz questions, push notification quizzes
+
+## App Features
+1. **Add Notes**: Type/paste text or scan handwritten/printed notes with camera/gallery
+2. **AI Quiz Generation**: Claude API generates multiple choice questions from notes
+3. **Push Notification Quizzes**: Interactive notifications with A/B/C/D answer buttons
+4. **Progress Tracking**: Streaks, accuracy stats, and learning progress
+5. **Spaced Repetition**: Questions weighted by times shown and correct rate
 
 ## App Store Compliance
 - Account deletion in Settings screen
 - Privacy policy and Terms of Service accessible in app and on web
-- Subscription cancellation instructions for iOS and Android
+- Restore Purchases button for subscription restoration
+- Subscription cancellation instructions for iOS
 - Contact support email accessible
 
 ## Running the Mobile App
@@ -80,21 +78,25 @@ python -m http.server 5000 --bind 0.0.0.0 --directory public
 
 ## Tech Stack
 - **Mobile**: React Native, Expo SDK 54, TypeScript
-- **Backend**: Supabase (Auth, Database, Edge Functions)
-- **AI**: Claude API for quiz generation
-- **Notifications**: Expo Notifications
+- **Backend**: Supabase (Auth, Database)
+- **AI**: Claude API for quiz generation and OCR
+- **Notifications**: Expo Notifications with interactive categories
 
 ## Supabase Configuration
 - **URL**: Set via EXPO_PUBLIC_SUPABASE_URL secret
 - **Key**: Set via EXPO_PUBLIC_SUPABASE_ANON_KEY secret
-- **Schema**: Run supabase-schema.sql and supabase-groups-schema.sql in SQL Editor
+- **Schema**: Run supabase-schema-simplified.sql in SQL Editor
+
+## Environment Variables
+- EXPO_PUBLIC_SUPABASE_URL - Supabase project URL
+- EXPO_PUBLIC_SUPABASE_ANON_KEY - Supabase anon key
+- EXPO_PUBLIC_CLAUDE_API_KEY - Claude API key for AI features
 
 ## Recent Changes
-- 2026-02-01: Upgraded to Expo SDK 54 (React 19, React Native 0.81.5)
-- 2026-02-01: Added Supabase connection test banner on HomeScreen
-- 2026-02-01: Configured Supabase credentials
-- 2026-01-31: Cleaned up project structure, moved website to public/ folder
-- 2026-01-31: Fixed security vulnerabilities (tar package) with npm overrides
-- 2026-01-31: Rebranded entire app to lime green (#c8ff00) on black theme
-- 2026-01-31: Created complete website: landing page, privacy, terms, about, contact
-- 2026-01-31: Added App Store compliance: account deletion, cancellation instructions
+- 2026-02-04: Updated pricing to $1.99/month (removed yearly option)
+- 2026-02-04: Simplified app to 5 screens (Home, Notes, AddNote, Quiz, Settings)
+- 2026-02-04: Added camera/gallery scanning with Claude Vision OCR
+- 2026-02-04: Added interactive notification categories (A/B/C/D answer buttons)
+- 2026-02-04: Removed groups and categories features for MVP simplicity
+- 2026-02-04: Updated all legal pages and landing page with new pricing
+- 2026-02-04: Fixed all TypeScript errors, app compiles successfully

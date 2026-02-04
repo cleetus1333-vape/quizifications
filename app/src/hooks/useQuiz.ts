@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { QuizQuestion } from '../types';
 
 export function useQuiz() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -21,81 +21,36 @@ export function useQuiz() {
     setLoading(true);
 
     try {
-      let question: QuizQuestion | null = null;
+      const { data: questions, error } = await supabase
+        .from('note_questions')
+        .select(`
+          id, question, correct_answer, wrong_answer_1, wrong_answer_2, wrong_answer_3, note_id,
+          notes!inner(title)
+        `)
+        .eq('user_id', user.id)
+        .order('times_shown', { ascending: true })
+        .limit(10);
 
-      if (user.is_premium) {
-        const { data: groupQ } = await supabase
-          .rpc('get_random_question_from_groups', { p_user_id: user.id });
-
-        if (groupQ && groupQ.length > 0) {
-          const q = groupQ[0];
-          const answers = shuffleArray([
-            q.correct_answer,
-            q.wrong_answer_1,
-            q.wrong_answer_2,
-            q.wrong_answer_3,
-          ]);
-          
-          question = {
-            id: q.id,
-            question: q.question,
-            answers,
-            correctIndex: answers.indexOf(q.correct_answer),
-            source: 'group',
-            sourceName: q.group_name || q.note_title,
-          };
-        }
-
-        if (!question) {
-          const { data: noteQ } = await supabase
-            .rpc('get_random_note_question', { p_user_id: user.id });
-
-          if (noteQ && noteQ.length > 0) {
-            const q = noteQ[0];
-            const answers = shuffleArray([
-              q.correct_answer,
-              q.wrong_answer_1,
-              q.wrong_answer_2,
-              q.wrong_answer_3,
-            ]);
-            
-            question = {
-              id: q.id,
-              question: q.question,
-              answers,
-              correctIndex: answers.indexOf(q.correct_answer),
-              source: 'note',
-              sourceName: q.note_title,
-            };
-          }
-        }
+      if (error || !questions || questions.length === 0) {
+        return null;
       }
 
-      if (!question) {
-        const { data: catQ } = await supabase
-          .rpc('get_random_category_question', { p_user_id: user.id });
+      const randomQ = questions[Math.floor(Math.random() * questions.length)];
+      const answers = shuffleArray([
+        randomQ.correct_answer,
+        randomQ.wrong_answer_1,
+        randomQ.wrong_answer_2,
+        randomQ.wrong_answer_3,
+      ]);
 
-        if (catQ && catQ.length > 0) {
-          const q = catQ[0];
-          const answers = shuffleArray([
-            q.correct_answer,
-            q.wrong_answer_1,
-            q.wrong_answer_2,
-            q.wrong_answer_3,
-          ]);
-          
-          question = {
-            id: q.id,
-            question: q.question,
-            answers,
-            correctIndex: answers.indexOf(q.correct_answer),
-            source: 'category',
-            sourceName: q.category_name,
-          };
-        }
-      }
-
-      return question;
+      return {
+        id: randomQ.id,
+        question: randomQ.question,
+        answers,
+        correctIndex: answers.indexOf(randomQ.correct_answer),
+        source: 'note',
+        sourceName: (randomQ as any).notes?.title || 'Your Notes',
+      };
     } catch (error) {
       console.error('Error fetching question:', error);
       return null;
@@ -106,70 +61,58 @@ export function useQuiz() {
 
   const recordAttempt = useCallback(async (
     questionId: string,
-    source: 'category' | 'note' | 'group',
-    wasCorrect: boolean,
-    wasDodged: boolean = false
+    source: 'note',
+    wasCorrect: boolean
   ) => {
     if (!user) return;
 
     try {
+      const { data: question } = await supabase
+        .from('note_questions')
+        .select('note_id')
+        .eq('id', questionId)
+        .single();
+
       await supabase.from('quiz_attempts').insert({
         user_id: user.id,
         question_id: questionId,
-        question_source: source,
+        note_id: question?.note_id || '',
+        selected_answer: '',
         was_correct: wasCorrect,
-        was_dodged: wasDodged,
       });
 
-      await supabase.rpc('update_user_streak', { p_user_id: user.id });
-
-      const weekStart = getWeekStart();
-      const { data: existingStats } = await supabase
-        .from('weekly_stats')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('week_start', weekStart)
-        .single();
-
-      if (existingStats) {
-        await supabase
-          .from('weekly_stats')
-          .update({
-            questions_answered: existingStats.questions_answered + 1,
-            correct_answers: existingStats.correct_answers + (wasCorrect ? 1 : 0),
-          })
-          .eq('id', existingStats.id);
-      } else {
-        await supabase.from('weekly_stats').insert({
-          user_id: user.id,
-          week_start: weekStart,
-          questions_answered: 1,
-          correct_answers: wasCorrect ? 1 : 0,
+      try {
+        await supabase.rpc('increment_question_stats', {
+          q_id: questionId,
+          was_correct: wasCorrect,
         });
+      } catch {
+        // Stats update failed, ignore
       }
+
+      await refreshUser();
     } catch (error) {
       console.error('Error recording attempt:', error);
     }
-  }, [user]);
+  }, [user, refreshUser]);
 
   const getTodayStats = useCallback(async () => {
-    if (!user) return { answered: 0, correct: 0, dodged: 0 };
+    if (!user) return { answered: 0, correct: 0 };
 
     const today = new Date().toISOString().split('T')[0];
 
     const { data } = await supabase
       .from('quiz_attempts')
-      .select('was_correct, was_dodged')
+      .select('was_correct')
       .eq('user_id', user.id)
       .gte('answered_at', `${today}T00:00:00`)
       .lt('answered_at', `${today}T23:59:59`);
 
-    if (!data) return { answered: 0, correct: 0, dodged: 0 };
+    if (!data) return { answered: 0, correct: 0 };
 
     return {
-      answered: data.filter(d => !d.was_dodged).length,
+      answered: data.length,
       correct: data.filter(d => d.was_correct).length,
-      dodged: data.filter(d => d.was_dodged).length,
     };
   }, [user]);
 
@@ -179,12 +122,4 @@ export function useQuiz() {
     recordAttempt,
     getTodayStats,
   };
-}
-
-function getWeekStart(): string {
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const diff = now.getDate() - dayOfWeek;
-  const weekStart = new Date(now.setDate(diff));
-  return weekStart.toISOString().split('T')[0];
 }

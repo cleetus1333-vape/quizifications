@@ -9,38 +9,43 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
-import { useQuiz } from '../hooks/useQuiz';
+import { supabase } from '../lib/supabase';
 import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
 import { config, trialCopy } from '../lib/config';
-import { testConnection, ConnectionTestResult } from '../lib/supabase';
 
 export default function HomeScreen({ navigation }: any) {
   const { user, refreshUser } = useAuth();
-  const { getTodayStats } = useQuiz();
-  const [stats, setStats] = useState({ answered: 0, correct: 0, dodged: 0 });
   const [refreshing, setRefreshing] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionTestResult | null>(null);
-  const [showConnectionBanner, setShowConnectionBanner] = useState(true);
+  const [stats, setStats] = useState({
+    notesCount: 0,
+    questionsCount: 0,
+    todayAnswered: 0,
+    todayCorrect: 0,
+  });
 
   const loadStats = useCallback(async () => {
-    const todayStats = await getTodayStats();
-    setStats(todayStats);
-  }, [getTodayStats]);
+    if (!user) return;
 
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const checkConnection = async () => {
-      const result = await testConnection();
-      setConnectionStatus(result);
-      if (result.success) {
-        timeoutId = setTimeout(() => setShowConnectionBanner(false), 5000);
-      }
-    };
-    checkConnection();
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, []);
+    const [notesResult, questionsResult, attemptsResult] = await Promise.all([
+      supabase.from('notes').select('id', { count: 'exact' }).eq('user_id', user.id),
+      supabase.from('note_questions').select('id', { count: 'exact' }).eq('user_id', user.id),
+      supabase
+        .from('quiz_attempts')
+        .select('was_correct')
+        .eq('user_id', user.id)
+        .gte('answered_at', new Date().toISOString().split('T')[0]),
+    ]);
+
+    const todayAttempts = attemptsResult.data || [];
+    const todayCorrect = todayAttempts.filter((a) => a.was_correct).length;
+
+    setStats({
+      notesCount: notesResult.count || 0,
+      questionsCount: questionsResult.count || 0,
+      todayAnswered: todayAttempts.length,
+      todayCorrect,
+    });
+  }, [user]);
 
   useEffect(() => {
     loadStats();
@@ -53,46 +58,22 @@ export default function HomeScreen({ navigation }: any) {
     setRefreshing(false);
   }, [refreshUser, loadStats]);
 
-  const accuracy = stats.answered > 0 
-    ? Math.round((stats.correct / stats.answered) * 100) 
+  const accuracy = stats.todayAnswered > 0
+    ? Math.round((stats.todayCorrect / stats.todayAnswered) * 100)
     : 0;
 
-  const handleTrialPress = () => {
-    navigation.navigate('Settings');
-  };
+  const totalAccuracy = user?.total_questions_answered && user.total_questions_answered > 0
+    ? Math.round((user.total_correct / user.total_questions_answered) * 100)
+    : 0;
 
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
       }
     >
-      {showConnectionBanner && connectionStatus && (
-        <TouchableOpacity 
-          style={[
-            styles.connectionBanner,
-            connectionStatus.success ? styles.connectionSuccess : styles.connectionError
-          ]}
-          onPress={() => setShowConnectionBanner(false)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.connectionIcon}>
-            {connectionStatus.success ? '✓' : '✗'}
-          </Text>
-          <View style={styles.connectionText}>
-            <Text style={styles.connectionMessage}>{connectionStatus.message}</Text>
-            {connectionStatus.success && (
-              <Text style={styles.connectionDetails}>
-                {connectionStatus.categoryCount} categories, {connectionStatus.questionCount} questions
-              </Text>
-            )}
-          </View>
-          <Text style={styles.connectionClose}>×</Text>
-        </TouchableOpacity>
-      )}
-
       <View style={styles.streakCard}>
         <LinearGradient
           colors={gradients.primary as [string, string]}
@@ -113,12 +94,12 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={styles.sectionTitle}>Today's Progress</Text>
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, shadows.md]}>
-            <Text style={styles.statNumber}>{stats.answered}</Text>
+            <Text style={styles.statNumber}>{stats.todayAnswered}</Text>
             <Text style={styles.statLabel}>Answered</Text>
           </View>
           <View style={[styles.statCard, shadows.md]}>
-            <Text style={styles.statNumber}>{stats.dodged}</Text>
-            <Text style={styles.statLabel}>Skipped</Text>
+            <Text style={styles.statNumber}>{stats.todayCorrect}</Text>
+            <Text style={styles.statLabel}>Correct</Text>
           </View>
           <View style={[styles.statCard, shadows.md]}>
             <Text style={[styles.statNumber, { color: colors.success }]}>{accuracy}%</Text>
@@ -128,73 +109,67 @@ export default function HomeScreen({ navigation }: any) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.actionsGrid}>
-          <TouchableOpacity 
-            style={[styles.actionCard, shadows.md]}
-            onPress={() => navigation.navigate('Categories')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBg, { backgroundColor: colors.primaryGlow }]}>
-              <Text style={styles.actionIcon}>📚</Text>
-            </View>
-            <Text style={styles.actionLabel}>Topics</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.actionCard, shadows.md]}
-            onPress={() => navigation.navigate('Notes')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBg, { backgroundColor: colors.accentGlow }]}>
-              <Text style={styles.actionIcon}>📝</Text>
-            </View>
-            <Text style={styles.actionLabel}>Notes</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.actionCard, shadows.md]}
-            onPress={() => navigation.navigate('Groups')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBg, { backgroundColor: colors.successGlow }]}>
-              <Text style={styles.actionIcon}>👥</Text>
-            </View>
-            <Text style={styles.actionLabel}>Groups</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.actionCard, shadows.md]}
-            onPress={() => navigation.navigate('Quiz')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBg, { backgroundColor: colors.goldGlow }]}>
-              <Text style={styles.actionIcon}>🎯</Text>
-            </View>
-            <Text style={styles.actionLabel}>Quiz</Text>
-          </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Your Study Material</Text>
+        <View style={styles.materialGrid}>
+          <View style={[styles.materialCard, shadows.md]}>
+            <Text style={styles.materialEmoji}>📝</Text>
+            <Text style={styles.materialNumber}>{stats.notesCount}</Text>
+            <Text style={styles.materialLabel}>Notes</Text>
+          </View>
+          <View style={[styles.materialCard, shadows.md]}>
+            <Text style={styles.materialEmoji}>❓</Text>
+            <Text style={styles.materialNumber}>{stats.questionsCount}</Text>
+            <Text style={styles.materialLabel}>Questions</Text>
+          </View>
         </View>
       </View>
 
-      <TouchableOpacity 
-        style={styles.practiceButton}
-        onPress={() => navigation.navigate('Quiz')}
-        activeOpacity={0.9}
-      >
-        <LinearGradient
-          colors={gradients.primary as [string, string]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.practiceGradient}
+      {stats.notesCount === 0 ? (
+        <TouchableOpacity
+          style={styles.ctaButton}
+          onPress={() => navigation.navigate('AddNote')}
+          activeOpacity={0.9}
         >
-          <Text style={styles.practiceButtonText}>Start Practice Session</Text>
-        </LinearGradient>
-      </TouchableOpacity>
+          <LinearGradient
+            colors={gradients.primary as [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.ctaGradient}
+          >
+            <Text style={styles.ctaButtonText}>📝 Add Your First Notes</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => navigation.navigate('Quiz')}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={gradients.primary as [string, string]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.primaryGradient}
+            >
+              <Text style={styles.primaryButtonText}>🎯 Start Quiz</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.secondaryButton, shadows.sm]}
+            onPress={() => navigation.navigate('AddNote')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.secondaryButtonText}>+ Add Notes</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {!user?.is_premium && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.trialCard, shadows.lg]}
-          onPress={handleTrialPress}
+          onPress={() => navigation.navigate('Settings')}
           activeOpacity={0.9}
         >
           <LinearGradient
@@ -213,9 +188,17 @@ export default function HomeScreen({ navigation }: any) {
         </TouchableOpacity>
       )}
 
-      {user?.username && (
-        <Text style={styles.username}>@{user.username}</Text>
-      )}
+      <View style={styles.overallStats}>
+        <Text style={styles.overallTitle}>Overall Stats</Text>
+        <View style={styles.overallRow}>
+          <Text style={styles.overallLabel}>Total questions answered</Text>
+          <Text style={styles.overallValue}>{user?.total_questions_answered || 0}</Text>
+        </View>
+        <View style={styles.overallRow}>
+          <Text style={styles.overallLabel}>Overall accuracy</Text>
+          <Text style={styles.overallValue}>{totalAccuracy}%</Text>
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -292,13 +275,67 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.textSecondary,
   },
-  actionsGrid: {
+  materialGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: spacing.md,
   },
-  actionCard: {
-    width: '47%',
+  materialCard: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  materialEmoji: {
+    fontSize: 32,
+    marginBottom: spacing.sm,
+  },
+  materialNumber: {
+    fontSize: fontSize.xxl,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  materialLabel: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  ctaButton: {
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    marginBottom: spacing.xl,
+    ...shadows.md,
+  },
+  ctaGradient: {
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  ctaButtonText: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  actionButtons: {
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  primaryButton: {
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    ...shadows.md,
+  },
+  primaryGradient: {
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  secondaryButton: {
     backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
@@ -306,35 +343,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  actionIconBg: {
-    width: 56,
-    height: 56,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  actionIcon: {
-    fontSize: 28,
-  },
-  actionLabel: {
+  secondaryButtonText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.text,
-  },
-  practiceButton: {
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    marginBottom: spacing.xl,
-    ...shadows.md,
-  },
-  practiceGradient: {
-    padding: spacing.lg,
-    alignItems: 'center',
-  },
-  practiceButtonText: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
     color: colors.text,
   },
   trialCard: {
@@ -385,50 +396,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
   },
-  username: {
-    textAlign: 'center',
-    color: colors.textMuted,
-    fontSize: fontSize.sm,
-  },
-  connectionBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
+  overallStats: {
+    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
-    marginBottom: spacing.lg,
-  },
-  connectionSuccess: {
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.success,
+    borderColor: colors.border,
   },
-  connectionError: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    borderWidth: 1,
-    borderColor: colors.error,
-  },
-  connectionIcon: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginRight: spacing.md,
-    color: colors.text,
-  },
-  connectionText: {
-    flex: 1,
-  },
-  connectionMessage: {
-    fontSize: fontSize.sm,
+  overallTitle: {
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.text,
+    marginBottom: spacing.md,
   },
-  connectionDetails: {
-    fontSize: fontSize.xs,
+  overallRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  overallLabel: {
+    fontSize: fontSize.sm,
     color: colors.textSecondary,
-    marginTop: 2,
   },
-  connectionClose: {
-    fontSize: 24,
-    color: colors.textMuted,
-    marginLeft: spacing.sm,
+  overallValue: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.text,
   },
 });
