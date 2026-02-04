@@ -92,7 +92,27 @@ python -m http.server 5000 --bind 0.0.0.0 --directory public
 - EXPO_PUBLIC_SUPABASE_ANON_KEY - Supabase anon key
 - EXPO_PUBLIC_CLAUDE_API_KEY - Claude API key for AI features
 
+## EAS Build & Submit (No Mac Required)
+See `app/BUILD_INSTRUCTIONS.md` for complete step-by-step guide.
+
+Quick commands:
+```bash
+npm install -g eas-cli
+eas login
+cd app && eas build --platform ios --profile production
+eas submit --platform ios --latest
+```
+
+## App Store Screenshots
+Located in `public/app-store-screenshots/` organized by device size:
+- 6.7-inch (iPhone 14/15 Pro Max): 1290x2796
+- 6.5-inch (iPhone 11/12/13 Pro Max): 1284x2778
+- 5.5-inch (iPhone 8 Plus): 1242x2208
+
 ## Recent Changes
+- 2026-02-04: Added iOS camera and photo library permissions to app.json
+- 2026-02-04: Created BUILD_INSTRUCTIONS.md with EAS Build submission guide
+- 2026-02-04: Generated App Store marketing screenshots for all required sizes
 - 2026-02-04: Updated pricing to $1.99/month (removed yearly option)
 - 2026-02-04: Simplified app to 5 screens (Home, Notes, AddNote, Quiz, Settings)
 - 2026-02-04: Added camera/gallery scanning with Claude Vision OCR

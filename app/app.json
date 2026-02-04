@@ -70,9 +70,9 @@
       "expo-asset"
     ],
     "extra": {
-      "privacyPolicyUrl": "https://quizifications.app/privacy",
-      "termsOfServiceUrl": "https://quizifications.app/terms",
-      "supportEmail": "support@quizifications.app",
+      "privacyPolicyUrl": "https://quizifications.com/privacy.html",
+      "termsOfServiceUrl": "https://quizifications.com/terms.html",
+      "supportEmail": "help@quizifications.com",
       "eas": {
         "projectId": "bc90b542-0c8a-465c-b429-316a9d8d1b19"
       }
