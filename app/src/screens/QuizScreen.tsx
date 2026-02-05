@@ -1,345 +1,201 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
-import { useQuiz } from '../hooks/useQuiz';
-import { QuizQuestion } from '../types';
-import { colors, spacing, borderRadius, fontSize, shadows, gradients } from '../constants/theme';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
-export default function QuizScreen({ navigation, route }: any) {
-  const { getRandomQuestion, recordAttempt, loading } = useQuiz();
-  const [question, setQuestion] = useState<QuizQuestion | null>(null);
+const COLORS = {
+  bg: '#0a0a0b',
+  card: '#141416',
+  primary: '#c8ff00',
+  text: '#ffffff',
+  textSecondary: '#9ca3af',
+  border: '#2a2a2e',
+  success: '#10b981',
+  error: '#ef4444',
+};
+
+interface Question {
+  id: string;
+  question: string;
+  answers: string[];
+  correctIndex: number;
+  noteTitle: string;
+}
+
+export default function QuizScreen() {
+  const navigation = useNavigation();
+  const { user, refreshUser } = useAuth();
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [showResult, setShowResult] = useState(false);
-
-  const notificationQuestion = route.params?.question;
+  const [answered, setAnswered] = useState(false);
 
   useEffect(() => {
-    if (notificationQuestion) {
-      setQuestion(notificationQuestion);
-    } else {
-      loadQuestion();
+    loadQuestion();
+  }, []);
+
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-  }, [notificationQuestion]);
+    return shuffled;
+  };
 
   const loadQuestion = async () => {
+    if (!user) return;
+    setLoading(true);
     setSelectedIndex(null);
-    setShowResult(false);
-    const q = await getRandomQuestion();
-    setQuestion(q);
+    setAnswered(false);
+
+    try {
+      const { data } = await supabase
+        .from('note_questions')
+        .select('id, question, correct_answer, wrong_answer_1, wrong_answer_2, wrong_answer_3, note_id, notes(title)')
+        .eq('user_id', user.id)
+        .order('times_shown', { ascending: true })
+        .limit(10);
+
+      if (!data || data.length === 0) {
+        setQuestion(null);
+        setLoading(false);
+        return;
+      }
+
+      const q = data[Math.floor(Math.random() * data.length)];
+      const answers = shuffleArray([q.correct_answer, q.wrong_answer_1, q.wrong_answer_2, q.wrong_answer_3]);
+
+      setQuestion({
+        id: q.id,
+        question: q.question,
+        answers,
+        correctIndex: answers.indexOf(q.correct_answer),
+        noteTitle: (q as any).notes?.title || 'Your Notes',
+      });
+    } catch (error) {
+      console.error('Error loading question:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAnswer = async (index: number) => {
-    if (showResult || !question) return;
+    if (answered || !question || !user) return;
 
     setSelectedIndex(index);
-    setShowResult(true);
+    setAnswered(true);
 
-    const isCorrect = index === question.correctIndex;
+    const wasCorrect = index === question.correctIndex;
 
-    if (isCorrect) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    try {
+      await supabase.from('quiz_attempts').insert({
+        user_id: user.id,
+        question_id: question.id,
+        note_id: '',
+        selected_answer: question.answers[index],
+        was_correct: wasCorrect,
+      });
+
+      try {
+        await supabase.rpc('increment_question_stats', { q_id: question.id, was_correct: wasCorrect });
+      } catch {}
+      await refreshUser();
+    } catch (error) {
+      console.error('Error recording attempt:', error);
     }
-
-    await recordAttempt(question.id, question.source, isCorrect);
   };
 
-  const getAnswerStyle = (index: number) => {
-    if (!showResult) {
-      return selectedIndex === index ? styles.answerSelected : styles.answer;
-    }
+  const getButtonStyle = (index: number) => {
+    if (!answered) return styles.answerBtn;
 
     if (index === question?.correctIndex) {
-      return styles.answerCorrect;
+      return [styles.answerBtn, styles.correctBtn];
     }
-
     if (index === selectedIndex && index !== question?.correctIndex) {
-      return styles.answerWrong;
+      return [styles.answerBtn, styles.wrongBtn];
     }
-
-    return styles.answer;
+    return styles.answerBtn;
   };
 
-  if (loading || !question) {
+  if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading question...</Text>
-        </View>
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  if (!question) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.emptyText}>No questions available</Text>
+        <Text style={styles.emptySubtext}>Add notes to generate quiz questions</Text>
+        <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.goBack()}>
+          <Text style={styles.primaryBtnText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={[styles.sourceBadge, shadows.sm]}>
-        <Text style={styles.sourceText}>
-          {question.source === 'note' ? '📝' : '📚'} {question.sourceName}
-        </Text>
-      </View>
+      <Text style={styles.source}>From: {question.noteTitle}</Text>
+      <Text style={styles.question}>{question.question}</Text>
 
-      <View style={[styles.questionCard, shadows.md]}>
-        <Text style={styles.questionText}>{question.question}</Text>
-      </View>
-
-      <View style={styles.answersContainer}>
+      <View style={styles.answers}>
         {question.answers.map((answer, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[getAnswerStyle(index), shadows.sm]}
-            onPress={() => handleAnswer(index)}
-            disabled={showResult}
-            activeOpacity={0.8}
-          >
-            <View style={styles.answerContent}>
-              <View style={[
-                styles.answerIndicator,
-                showResult && index === question.correctIndex && styles.indicatorCorrect,
-                showResult && index === selectedIndex && index !== question.correctIndex && styles.indicatorWrong,
-              ]}>
-                <Text style={styles.answerLetter}>
-                  {String.fromCharCode(65 + index)}
-                </Text>
-              </View>
-              <Text style={[
-                styles.answerText,
-                showResult && index === question.correctIndex && styles.answerTextCorrect,
-                showResult && index === selectedIndex && index !== question.correctIndex && styles.answerTextWrong,
-              ]}>
-                {answer}
-              </Text>
-            </View>
+          <TouchableOpacity key={index} style={getButtonStyle(index)} onPress={() => handleAnswer(index)} disabled={answered}>
+            <Text style={styles.answerLetter}>{String.fromCharCode(65 + index)}</Text>
+            <Text style={styles.answerText}>{answer}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {showResult && (
-        <View style={styles.resultContainer}>
-          <View style={[
-            styles.resultBadge,
-            selectedIndex === question.correctIndex ? styles.resultBadgeCorrect : styles.resultBadgeWrong
-          ]}>
-            <Text style={styles.resultText}>
-              {selectedIndex === question.correctIndex ? '✓ Correct!' : '✗ Incorrect'}
-            </Text>
-          </View>
-
-          <View style={styles.buttonRow}>
-            <TouchableOpacity 
-              style={styles.nextButton}
-              onPress={loadQuestion}
-              activeOpacity={0.9}
-            >
-              <LinearGradient
-                colors={gradients.primary as [string, string]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.nextButtonGradient}
-              >
-                <Text style={styles.nextButtonText}>Next Question</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.doneButton, shadows.sm]}
-              onPress={() => navigation.goBack()}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.doneButtonText}>Done</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      {answered && (
+        <TouchableOpacity style={styles.nextBtn} onPress={loadQuestion}>
+          <Text style={styles.nextBtnText}>Next Question</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: spacing.lg,
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-  loadingCard: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xxl,
-    alignItems: 'center',
-    ...shadows.lg,
-  },
-  loadingText: {
-    color: colors.textSecondary,
-    marginTop: spacing.lg,
-    fontSize: fontSize.md,
-  },
-  sourceBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.card,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  sourceText: {
-    color: colors.textSecondary,
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-  },
-  questionCard: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    marginBottom: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  questionText: {
-    color: colors.text,
-    fontSize: fontSize.xl,
-    fontWeight: '600',
-    lineHeight: 32,
-  },
-  answersContainer: {
-    gap: spacing.md,
-  },
-  answer: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  answerSelected: {
-    backgroundColor: colors.cardElevated,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  answerCorrect: {
-    backgroundColor: colors.successGlow,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.success,
-  },
-  answerWrong: {
-    backgroundColor: colors.errorGlow,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.error,
-  },
-  answerContent: {
+  container: { flex: 1, backgroundColor: COLORS.bg, padding: 20 },
+  centerContainer: { flex: 1, backgroundColor: COLORS.bg, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  emptyText: { fontSize: 20, fontWeight: '600', color: COLORS.text, marginBottom: 8 },
+  emptySubtext: { fontSize: 16, color: COLORS.textSecondary, marginBottom: 24 },
+  source: { fontSize: 14, color: COLORS.primary, marginBottom: 12 },
+  question: { fontSize: 22, fontWeight: '600', color: COLORS.text, marginBottom: 24, lineHeight: 30 },
+  answers: { gap: 12 },
+  answerBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  answerIndicator: {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.cardElevated,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  indicatorCorrect: {
-    backgroundColor: colors.success,
-  },
-  indicatorWrong: {
-    backgroundColor: colors.error,
-  },
-  answerLetter: {
-    color: colors.text,
-    fontSize: fontSize.sm,
-    fontWeight: '700',
-  },
-  answerText: {
-    flex: 1,
-    color: colors.text,
-    fontSize: fontSize.md,
-    fontWeight: '500',
-  },
-  answerTextCorrect: {
-    color: colors.success,
-  },
-  answerTextWrong: {
-    color: colors.error,
-  },
-  resultContainer: {
-    marginTop: spacing.xl,
-    alignItems: 'center',
-  },
-  resultBadge: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
-    marginBottom: spacing.lg,
-  },
-  resultBadgeCorrect: {
-    backgroundColor: colors.successGlow,
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
-    borderColor: colors.success,
+    borderColor: COLORS.border,
   },
-  resultBadgeWrong: {
-    backgroundColor: colors.errorGlow,
-    borderWidth: 1,
-    borderColor: colors.error,
-  },
-  resultText: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    width: '100%',
-  },
-  nextButton: {
-    flex: 2,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-  },
-  nextButtonGradient: {
-    padding: spacing.lg,
+  correctBtn: { borderColor: COLORS.success, backgroundColor: 'rgba(16, 185, 129, 0.1)' },
+  wrongBtn: { borderColor: COLORS.error, backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+  answerLetter: { fontSize: 16, fontWeight: '700', color: COLORS.primary, marginRight: 12, width: 24 },
+  answerText: { fontSize: 16, color: COLORS.text, flex: 1 },
+  nextBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
+    marginTop: 24,
   },
-  nextButtonText: {
-    color: colors.text,
-    fontSize: fontSize.md,
-    fontWeight: '700',
+  nextBtnText: { color: COLORS.bg, fontSize: 16, fontWeight: '700' },
+  primaryBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    padding: 16,
+    paddingHorizontal: 32,
   },
-  doneButton: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  doneButtonText: {
-    color: colors.text,
-    fontSize: fontSize.md,
-    fontWeight: '600',
-  },
+  primaryBtnText: { color: COLORS.bg, fontSize: 16, fontWeight: '700' },
 });
